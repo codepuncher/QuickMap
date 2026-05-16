@@ -1,4 +1,4 @@
-# ExampleMod
+# QuickMap
 
 A starter template for Skyrim Special Edition / Anniversary Edition SKSE plugins using
 [CommonLibSSE-NG](https://github.com/alandtse/CommonLibVR/tree/ng), [CMake](https://cmake.org), and [vcpkg](https://vcpkg.io).
@@ -53,7 +53,7 @@ cd your-mod
 ```bash
 ./scripts/init.sh
 # or:
-./scripts/init.sh "AuthorName" "ModName"
+./scripts/init.sh "codepuncherName" "ModName"
 ```
 
 **Windows (PowerShell)**:
@@ -61,7 +61,7 @@ cd your-mod
 ```powershell
 .\scripts\init.ps1
 # or:
-.\scripts\init.ps1 "AuthorName" "ModName"
+.\scripts\init.ps1 "codepuncherName" "ModName"
 ```
 
 This will:
@@ -91,7 +91,7 @@ cmake --preset release-linux
 cmake --build --preset release-linux
 ```
 
-The DLL lands in `build/release-linux/ExampleMod.dll`.
+The DLL lands in `build/release-linux/QuickMap.dll`.
 
 > **Note:** On first configure, `cmake/toolchains/clang-cl-cross.cmake` creates
 > TitleCase symlinks inside your xwin installation, e.g.:
@@ -109,9 +109,9 @@ The DLL lands in `build/release-linux/ExampleMod.dll`.
 source .env && cmake --workflow --preset deploy
 ```
 
-This configures, builds, and copies `ExampleMod.dll` + `ExampleMod.pdb` directly into:
+This configures, builds, and copies `QuickMap.dll` + `QuickMap.pdb` directly into:
 ```
-$SKYRIM_MODS_FOLDER/ExampleMod/SKSE/Plugins/
+$SKYRIM_MODS_FOLDER/QuickMap/SKSE/Plugins/
 ```
 
 Vortex will detect the new mod folder automatically. Enable it in Vortex, then launch Skyrim.
@@ -128,7 +128,7 @@ cmake --preset release-windows
 cmake --build --preset release-windows
 ```
 
-The DLL lands in `build/msvc/Release/ExampleMod.dll`.
+The DLL lands in `build/msvc/Release/QuickMap.dll`.
 
 ---
 
@@ -136,9 +136,9 @@ The DLL lands in `build/msvc/Release/ExampleMod.dll`.
 
 When loaded by Skyrim the plugin:
 
-1. **Writes a log** to `Data/SKSE/Plugins/ExampleMod.log` via spdlog.
+1. **Writes a log** to `Data/SKSE/Plugins/QuickMap.log` via spdlog.
 2. **Hooks `kDataLoaded`** (fires once all game data is loaded).
-3. **Prints to the in-game console** (`~` key): `[ExampleMod] Loaded successfully!`
+3. **Prints to the in-game console** (`~` key): `[QuickMap] Loaded successfully!`
 
 ---
 
