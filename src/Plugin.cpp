@@ -37,9 +37,10 @@ float ReadHoldDuration()
 
 void OnInputLoaded()
 {
-	auto* handler = InputHandler::GetSingleton();
-	handler->holdDuration = ReadHoldDuration();
-	logger::info("Hold duration: {:.2f}s", handler->holdDuration);
+	auto*       handler = InputHandler::GetSingleton();
+	const float holdDuration = ReadHoldDuration();
+	handler->SetHoldDuration(holdDuration);
+	logger::info("Hold duration: {:.2f}s", holdDuration);
 
 	auto* inputDeviceMgr = RE::BSInputDeviceManager::GetSingleton();
 	if (!inputDeviceMgr) {
