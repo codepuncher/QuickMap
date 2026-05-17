@@ -16,8 +16,29 @@ on:
         required: false
 
 jobs:
+  changelog:
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    outputs:
+      notes: ${{ steps.cliff.outputs.content }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+
   release:
-    if: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_nexus) }}
+    needs: [changelog]
+    if: ${{ !cancelled() && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (github.event_name == 'workflow_dispatch' && inputs.upload_to_nexus)) }}
     runs-on: windows-latest
 
     permissions:
@@ -28,7 +49,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: recursive
-          fetch-depth: 0
 
       - name: Install CMake and Ninja
         uses: lukka/get-cmake@latest
@@ -80,16 +100,6 @@ jobs:
           VERSION: ${{ steps.version.outputs.value }}
         run: bash scripts/package.sh --build-dir build/msvc/Release "$VERSION"
 
-      - name: Generate release notes
-        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
-        id: cliff
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-          args: --latest --strip header
-        env:
-          GITHUB_REPO: ${{ github.repository }}
-
       - name: Create GitHub Release
         if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
         uses: softprops/action-gh-release@v3
@@ -97,7 +107,7 @@ jobs:
           files: |
             ${{ steps.package.outputs.zip }}
             build/msvc/Release/*.pdb
-          body: ${{ steps.cliff.outputs.content }}
+          body: ${{ needs.changelog.outputs.notes }}
 
       - name: Upload to Nexus Mods
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_to_nexus }}
@@ -106,6 +116,7 @@ jobs:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ vars.NEXUSMODS_FILE_GROUP_ID }}
           filename: ${{ steps.package.outputs.zip }}
+          display_name: ${{ github.event.repository.name }}
+          description: ${{ needs.changelog.outputs.notes }}
           version: ${{ steps.version.outputs.value }}
           archive_existing_file: true
-
