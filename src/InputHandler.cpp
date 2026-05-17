@@ -10,7 +10,13 @@ InputHandler* InputHandler::GetSingleton()
 	return &instance;
 }
 
-void InputHandler::UpdateShortPressUserEvent()
+void InputHandler::SetButton(std::uint32_t a_keyCode, std::string a_name)
+{
+	buttonKeyCode = a_keyCode;
+	buttonName = std::move(a_name);
+}
+
+void InputHandler::UpdateShortPressBinding()
 {
 	auto* controlMap = RE::ControlMap::GetSingleton();
 	if (!controlMap) {
@@ -19,13 +25,12 @@ void InputHandler::UpdateShortPressUserEvent()
 		return;
 	}
 
-	constexpr auto kStart = static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart);
-	shortPressUserEvent = controlMap->GetUserEventName(kStart, RE::INPUT_DEVICE::kGamepad);
+	shortPressUserEvent = controlMap->GetUserEventName(buttonKeyCode, RE::INPUT_DEVICE::kGamepad);
 
 	if (shortPressUserEvent.empty()) {
-		logger::warn("Start has no binding in kGameplay context — short press disabled");
+		logger::warn("{} has no binding in kGameplay context — short press disabled", buttonName);
 	} else {
-		logger::info("Start short press user event: '{}'", shortPressUserEvent);
+		logger::info("{} short press user event: '{}'", buttonName, shortPressUserEvent);
 	}
 }
 
@@ -34,7 +39,7 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 	RE::BSTEventSource<RE::MenuOpenCloseEvent>* /*a_eventSource*/)
 {
 	if (a_event && !a_event->opening && a_event->menuName == RE::JournalMenu::MENU_NAME) {
-		UpdateShortPressUserEvent();
+		UpdateShortPressBinding();
 	}
 	return RE::BSEventNotifyControl::kContinue;
 }
@@ -48,8 +53,8 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 	}
 
 	// If any pausing menu is open (Journal, Map, Inventory, Console, etc.), pass all input
-	// through so the active menu can handle Start normally. Also clears any captured press
-	// so _pressTime can't fire a spurious dispatch once the menu closes.
+	// through so the active menu can handle the configured button normally. Also clears any
+	// captured press so _pressTime can't fire a spurious dispatch once the menu closes.
 	auto* ui = RE::UI::GetSingleton();
 	if (ui && ui->GameIsPaused()) {
 		_pressTime.reset();
@@ -67,10 +72,10 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 		if (btn->GetDevice() != RE::INPUT_DEVICE::kGamepad) {
 			continue;
 		}
-		if (btn->GetIDCode() != static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart)) {
+		if (btn->GetIDCode() != buttonKeyCode) {
 			continue;
 		}
-		if (ProcessStartButton(btn)) {
+		if (ProcessButton(btn)) {
 			shouldBlock = true;
 		}
 	}
@@ -78,7 +83,7 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 	return shouldBlock ? RE::BSEventNotifyControl::kStop : RE::BSEventNotifyControl::kContinue;
 }
 
-bool InputHandler::ProcessStartButton(const RE::ButtonEvent* btn)
+bool InputHandler::ProcessButton(const RE::ButtonEvent* btn)
 {
 	if (btn->IsDown()) {
 		_pressTime = std::chrono::steady_clock::now();
@@ -119,12 +124,12 @@ bool InputHandler::ProcessStartButton(const RE::ButtonEvent* btn)
 void InputHandler::DispatchShortPress(float held) const
 {
 	if (held > holdDuration + 5.0F) {
-		logger::warn("Start press duration {:.1f}s exceeds sanity limit — discarded", held);
+		logger::warn("{} press duration {:.1f}s exceeds sanity limit — discarded", buttonName, held);
 		return;
 	}
 
 	if (shortPressUserEvent.empty()) {
-		logger::warn("Start short press has no binding — press consumed but no menu opened");
+		logger::warn("{} short press has no binding — press consumed but no menu opened", buttonName);
 		return;
 	}
 
@@ -134,8 +139,7 @@ void InputHandler::DispatchShortPress(float held) const
 		return;
 	}
 
-	constexpr auto kStart = static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart);
-	auto           deleter = [](RE::ButtonEvent* e) {
+	auto deleter = [](RE::ButtonEvent* e) {
 		e->~ButtonEvent();
 		RE::free(e);
 	};
@@ -143,7 +147,7 @@ void InputHandler::DispatchShortPress(float held) const
 		RE::ButtonEvent::Create(
 			RE::INPUT_DEVICE::kGamepad,
 			shortPressUserEvent,
-			kStart,
+			buttonKeyCode,
 			1.0F,  // value=1.0 → IsPressed()=true, IsDown()=true
 			0.0F   // heldDownSecs=0.0 → IsDown()=true
 			),

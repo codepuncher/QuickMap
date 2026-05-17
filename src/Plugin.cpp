@@ -1,5 +1,8 @@
 #include "PCH.h"
 
+#include <cctype>
+#include <unordered_map>
+
 #include "InputHandler.h"
 
 namespace logger = SKSE::log;
@@ -19,15 +22,9 @@ void SetupLog()
 	spdlog::flush_on(spdlog::level::info);
 }
 
-float ReadHoldDuration()
+float ReadHoldDuration(const CSimpleIniA& a_ini)
 {
-	CSimpleIniA ini;
-	const auto  rc = ini.LoadFile(R"(Data\SKSE\Plugins\QuickMap.ini)");
-	if (rc < SI_OK) {
-		logger::warn("QuickMap.ini not found or could not be parsed (rc={}) — using default hold duration {:.1f}s", static_cast<int>(rc), InputHandler::kDefaultHoldDuration);
-		return InputHandler::kDefaultHoldDuration;
-	}
-	const auto duration = static_cast<float>(ini.GetDoubleValue("General", "fHoldDuration", InputHandler::kDefaultHoldDuration));
+	const auto duration = static_cast<float>(a_ini.GetDoubleValue("General", "fHoldDuration", InputHandler::kDefaultHoldDuration));
 	if (duration <= 0.0F) {
 		logger::warn("fHoldDuration ({:.2f}) must be positive — using default {:.1f}", duration, InputHandler::kDefaultHoldDuration);
 		return InputHandler::kDefaultHoldDuration;
@@ -35,12 +32,53 @@ float ReadHoldDuration()
 	return duration;
 }
 
+struct ButtonDef
+{
+	std::uint32_t keyCode;
+	std::string   displayName;
+};
+
+std::pair<std::uint32_t, std::string> ReadButton(const CSimpleIniA& a_ini)
+{
+	using Key = RE::BSWin32GamepadDevice::Key;
+
+	static const std::unordered_map<std::string, ButtonDef> kButtonMap{
+		{ "start", { .keyCode = static_cast<std::uint32_t>(Key::kStart), .displayName = "Start" } },
+		{ "back", { .keyCode = static_cast<std::uint32_t>(Key::kBack), .displayName = "Back" } },
+	};
+
+	std::string raw = a_ini.GetValue("General", "sButton", "Start");
+	std::string lower = raw;
+	std::ranges::transform(lower, lower.begin(), [](unsigned char c) {
+		return static_cast<char>(std::tolower(c));
+	});
+
+	const auto it = kButtonMap.find(lower);
+	if (it == kButtonMap.end()) {
+		logger::warn("sButton '{}' is not a recognised button (valid: Start, Back) — using Start", raw);
+		return { InputHandler::kDefaultButton, "Start" };
+	}
+
+	return { it->second.keyCode, it->second.displayName };
+}
+
 void OnInputLoaded()
 {
-	auto*       handler = InputHandler::GetSingleton();
-	const float holdDuration = ReadHoldDuration();
+	auto* handler = InputHandler::GetSingleton();
+
+	CSimpleIniA ini;
+	const auto  rc = ini.LoadFile(R"(Data\SKSE\Plugins\QuickMap.ini)");
+	if (rc < SI_OK) {
+		logger::warn("QuickMap.ini not found or could not be parsed (rc={}) — using defaults", static_cast<int>(rc));
+	}
+
+	const float holdDuration = ReadHoldDuration(ini);
 	handler->SetHoldDuration(holdDuration);
 	logger::info("Hold duration: {:.2f}s", holdDuration);
+
+	auto [buttonKeyCode, buttonName] = ReadButton(ini);
+	logger::info("Trigger button: {}", buttonName);
+	handler->SetButton(buttonKeyCode, std::move(buttonName));
 
 	auto* inputDeviceMgr = RE::BSInputDeviceManager::GetSingleton();
 	if (!inputDeviceMgr) {
@@ -58,7 +96,7 @@ void OnInputLoaded()
 		ui->AddEventSink<RE::MenuOpenCloseEvent>(handler);
 	}
 
-	handler->UpdateShortPressUserEvent();
+	handler->UpdateShortPressBinding();
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
@@ -86,7 +124,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 				break;
 			case SKSE::MessagingInterface::kPostLoadGame:
 			case SKSE::MessagingInterface::kNewGame:
-				InputHandler::GetSingleton()->UpdateShortPressUserEvent();
+				InputHandler::GetSingleton()->UpdateShortPressBinding();
 				break;
 			default:
 				break;

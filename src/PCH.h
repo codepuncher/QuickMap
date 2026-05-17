@@ -10,6 +10,7 @@
 
 #include <SimpleIni.h>
 
+#include <algorithm>
 #include <chrono>
 #include <memory>
 #include <optional>

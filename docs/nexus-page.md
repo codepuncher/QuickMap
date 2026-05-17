@@ -2,7 +2,7 @@
 
 ## Short Description
 
-Hold the gamepad Start button to open the world map. Short press opens whatever menu Start is bound to in your controls.
+Hold a configurable gamepad button (Start or Back, default: Start) to open the world map. A short press opens the button's normal menu.
 
 ---
 
@@ -21,13 +21,13 @@ Hold the gamepad Start button to open the world map. Short press opens whatever 
 
 ```bbcode
 [center][size=5][b]QuickMap[/b][/size]
-[i]Hold Start · Open the World Map[/i][/center]
+[i]Hold Start or Back · Open the Map[/i][/center]
 
 [line]
 
 [size=4][b]Overview[/b][/size]
 
-Hold the gamepad [b]Start button[/b] for a configurable duration to open the [b]world map[/b] directly. A short press opens whatever menu Start is bound to in your controls.
+Hold a configurable gamepad button (Start or Back, default: [b]Start[/b]) for a configurable duration to open the [b]world map[/b] directly. A short press opens the button's normal menu.
 
 [color=#ffcc00][b]Gamepad only.[/b][/color]
 
@@ -62,11 +62,15 @@ Hold the gamepad [b]Start button[/b] for a configurable duration to open the [b]
 
 [size=4][b]Configuration[/b][/size]
 
-Edit [font=Courier New]Data\SKSE\Plugins\QuickMap.ini[/font] to adjust the hold duration (default: 0.5 seconds):
+Edit [font=Courier New]Data\SKSE\Plugins\QuickMap.ini[/font]:
 
 [code]
 [General]
+; Duration in seconds the button must be held to open the map (default: 0.5)
 fHoldDuration=0.5
+; Button to hold for the map. Short press performs the button's normal function.
+; Valid values: Start, Back (case-insensitive)
+sButton=Start
 [/code]
 
 [line]
@@ -76,7 +80,7 @@ fHoldDuration=0.5
 [list]
 [*]Compatible with Skyrim SE and AE.
 [*]No ESP/ESL required.
-[*]Compatible with any mod that does not also intercept the gamepad Start button.
+[*]Compatible with any mod that does not also intercept the configured gamepad button.
 [/list]
 
 [line]
