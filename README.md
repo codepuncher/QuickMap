@@ -117,7 +117,7 @@ The DLL lands in `build/release-linux/QuickMap.dll`.
 source .env && cmake --workflow --preset deploy
 ```
 
-Copies `QuickMap.dll` + `QuickMap.pdb` into `$SKYRIM_MODS_FOLDER/QuickMap/SKSE/Plugins/`.
+Copies `QuickMap.dll`, `QuickMap.pdb`, and `QuickMap.ini` into `$SKYRIM_MODS_FOLDER/QuickMap/SKSE/Plugins/`.
 
 #### Windows (MSVC)
 
@@ -179,7 +179,7 @@ git commit -m "chore: update CommonLibSSE-NG submodule"
 
 #### Nexus Mods Upload
 
-Triggered via **workflow_dispatch** with `upload_to_nexus: true`. One-time setup:
+Triggered via **workflow_dispatch** with `upload_to_nexus: true` and the `version` input set (e.g. `1.0.0`). One-time setup:
 
 1. Upload your first file manually via the [Nexus Mods web UI](https://www.nexusmods.com) to create the file group.
 2. Add to your repository:
