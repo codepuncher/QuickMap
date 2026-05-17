@@ -1,5 +1,6 @@
-#include "InputHandler.h"
 #include "PCH.h"
+
+#include "InputHandler.h"
 
 namespace logger = SKSE::log;
 
