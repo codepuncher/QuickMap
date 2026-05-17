@@ -135,26 +135,29 @@ void InputHandler::DispatchShortPress(float held) const
 	}
 
 	constexpr auto kStart = static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart);
-	auto*          syntheticEvent = RE::ButtonEvent::Create(
-		RE::INPUT_DEVICE::kGamepad,
-		shortPressUserEvent,
-		kStart,
-		1.0F,  // value=1.0 → IsPressed()=true, IsDown()=true
-		0.0F   // heldDownSecs=0.0 → IsDown()=true
-	);
+	auto           deleter = [](RE::ButtonEvent* e) {
+		e->~ButtonEvent();
+		RE::free(e);
+	};
+	std::unique_ptr<RE::ButtonEvent, decltype(deleter)> syntheticEvent{
+		RE::ButtonEvent::Create(
+			RE::INPUT_DEVICE::kGamepad,
+			shortPressUserEvent,
+			kStart,
+			1.0F,  // value=1.0 → IsPressed()=true, IsDown()=true
+			0.0F   // heldDownSecs=0.0 → IsDown()=true
+			),
+		deleter
+	};
 	if (!syntheticEvent) {
 		logger::error("Failed to allocate synthetic ButtonEvent — short press consumed but no menu opened");
 		return;
 	}
 
-	if (!menuControls->menuOpenHandler->CanProcess(syntheticEvent)) {
+	if (!menuControls->menuOpenHandler->CanProcess(syntheticEvent.get())) {
 		logger::warn("MenuOpenHandler rejected short press — press consumed but no menu opened");
-		syntheticEvent->~ButtonEvent();
-		RE::free(syntheticEvent);
 		return;
 	}
 
-	menuControls->menuOpenHandler->ProcessButton(syntheticEvent);
-	syntheticEvent->~ButtonEvent();
-	RE::free(syntheticEvent);
+	menuControls->menuOpenHandler->ProcessButton(syntheticEvent.get());
 }
