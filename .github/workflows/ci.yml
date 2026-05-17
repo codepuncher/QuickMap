@@ -23,11 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: DoozyX/clang-format-lint-action@v0.20
+      - uses: jidicula/clang-format-action@v4.18.0
         with:
-          source: src
-          extensions: cpp,h
-          clangFormatVersion: 22
+          clang-format-version: '22'
+          check-path: src
 
   clang-tidy:
     needs: clang-format
