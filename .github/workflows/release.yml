@@ -88,6 +88,21 @@ jobs:
             build/msvc/Release/*.pdb
           generate_release_notes: true
 
+      - name: Get release notes
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_to_nexus }}
+        id: release_notes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          notes=$(gh release view "v${VERSION}" --json body -q .body 2>/dev/null || true)
+          {
+            echo "body<<EOF"
+            echo "$notes"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Upload to Nexus Mods
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_to_nexus }}
         uses: Nexus-Mods/upload-action@v1.0.0-beta.5
@@ -96,6 +111,7 @@ jobs:
           file_group_id: ${{ vars.NEXUSMODS_FILE_GROUP_ID }}
           filename: ${{ steps.package.outputs.zip }}
           display_name: ${{ github.event.repository.name }}
+          description: ${{ steps.release_notes.outputs.body }}
           version: ${{ steps.version.outputs.value }}
           archive_existing_file: true
 
