@@ -7,6 +7,11 @@ class InputHandler :
 public:
 	static InputHandler* GetSingleton();
 
+	InputHandler(const InputHandler&) = delete;
+	InputHandler(InputHandler&&) = delete;
+	InputHandler& operator=(const InputHandler&) = delete;
+	InputHandler& operator=(InputHandler&&) = delete;
+
 	RE::BSEventNotifyControl ProcessEvent(
 		RE::InputEvent* const*               a_events,
 		RE::BSTEventSource<RE::InputEvent*>* a_source) override;
@@ -17,22 +22,22 @@ public:
 
 	static constexpr float kDefaultHoldDuration{ 0.5F };
 
-	float       holdDuration{ kDefaultHoldDuration };
-	std::string shortPressMenuName;
+	void SetHoldDuration(float a_duration) noexcept { holdDuration = a_duration; }
 
-	// Queries ControlMap for the menu bound to Start and caches it in shortPressMenuName.
+	// Queries ControlMap for the user event bound to Start and caches it in shortPressUserEvent.
 	// Call at kInputLoaded, kPostLoadGame, and kNewGame.
-	void UpdateShortPressMenu();
+	void UpdateShortPressUserEvent();
+
+	~InputHandler() override = default;
 
 private:
 	InputHandler() = default;
-	~InputHandler() = default;
-	InputHandler(const InputHandler&) = delete;
-	InputHandler& operator=(const InputHandler&) = delete;
 
 	bool ProcessStartButton(const RE::ButtonEvent* btn);
 	void DispatchShortPress(float held) const;
 
+	float                                                holdDuration{ kDefaultHoldDuration };
+	RE::BSFixedString                                    shortPressUserEvent;
 	std::optional<std::chrono::steady_clock::time_point> _pressTime;
 	bool                                                 _mapTriggered{ false };
 };

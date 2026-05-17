@@ -10,32 +10,23 @@ InputHandler* InputHandler::GetSingleton()
 	return &instance;
 }
 
-void InputHandler::UpdateShortPressMenu()
+void InputHandler::UpdateShortPressUserEvent()
 {
 	auto* controlMap = RE::ControlMap::GetSingleton();
 	if (!controlMap) {
 		logger::error("ControlMap unavailable — short press will have no effect");
-		shortPressMenuName.clear();
+		shortPressUserEvent = "";
 		return;
 	}
 
 	constexpr auto kStart = static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart);
-	const auto     userEvent = controlMap->GetUserEventName(kStart, RE::INPUT_DEVICE::kGamepad);
+	shortPressUserEvent = controlMap->GetUserEventName(kStart, RE::INPUT_DEVICE::kGamepad);
 
-	if (userEvent == "Tween Menu") {
-		shortPressMenuName = RE::TweenMenu::MENU_NAME;
-	} else if (userEvent == "Journal") {
-		shortPressMenuName = RE::JournalMenu::MENU_NAME;
+	if (shortPressUserEvent.empty()) {
+		logger::warn("Start has no binding in kGameplay context — short press disabled");
 	} else {
-		if (userEvent.empty()) {
-			logger::warn("Start has no binding in kGameplay context — short press disabled");
-		} else {
-			logger::warn("Unknown user event '{}' for Start — short press disabled", userEvent);
-		}
-		shortPressMenuName.clear();
+		logger::info("Start short press user event: '{}'", shortPressUserEvent);
 	}
-
-	logger::info("Start short press bound to '{}'", shortPressMenuName.empty() ? "(none)" : shortPressMenuName);
 }
 
 RE::BSEventNotifyControl InputHandler::ProcessEvent(
@@ -43,7 +34,7 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 	RE::BSTEventSource<RE::MenuOpenCloseEvent>* /*a_eventSource*/)
 {
 	if (a_event && !a_event->opening && a_event->menuName == RE::JournalMenu::MENU_NAME) {
-		UpdateShortPressMenu();
+		UpdateShortPressUserEvent();
 	}
 	return RE::BSEventNotifyControl::kContinue;
 }
@@ -97,12 +88,12 @@ bool InputHandler::ProcessStartButton(const RE::ButtonEvent* btn)
 
 	if (btn->IsHeld() && _pressTime) {
 		if (!_mapTriggered && btn->HeldDuration() >= holdDuration) {
+			_mapTriggered = true;
 			auto* uiQueue = RE::UIMessageQueue::GetSingleton();
 			if (!uiQueue) {
 				logger::error("UIMessageQueue unavailable — hold threshold reached but map not opened");
 			} else {
 				uiQueue->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
-				_mapTriggered = true;
 			}
 		}
 		return true;
@@ -132,22 +123,41 @@ void InputHandler::DispatchShortPress(float held) const
 		return;
 	}
 
-	auto* uiQueue = RE::UIMessageQueue::GetSingleton();
-	if (!uiQueue) {
-		logger::error("UIMessageQueue unavailable — Start press consumed but no menu opened");
+	if (shortPressUserEvent.empty()) {
+		logger::warn("Start short press has no binding — press consumed but no menu opened");
 		return;
 	}
 
-	if (shortPressMenuName.empty()) {
-		logger::warn("Start short press has no known binding — press consumed but no menu opened");
+	auto* menuControls = RE::MenuControls::GetSingleton();
+	if (!menuControls || !menuControls->menuOpenHandler) {
+		logger::error("MenuControls or menuOpenHandler unavailable — short press consumed but no menu opened");
 		return;
 	}
 
-	if (shortPressMenuName == RE::JournalMenu::MENU_NAME) {
-		using func_t = void (*)(bool);
-		static REL::Relocation<func_t> openJournal{ RELOCATION_ID(52428, 53327) };
-		openJournal(true);
-	} else {
-		uiQueue->AddMessage(shortPressMenuName, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+	constexpr auto kStart = static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart);
+	auto           deleter = [](RE::ButtonEvent* e) {
+		e->~ButtonEvent();
+		RE::free(e);
+	};
+	std::unique_ptr<RE::ButtonEvent, decltype(deleter)> syntheticEvent{
+		RE::ButtonEvent::Create(
+			RE::INPUT_DEVICE::kGamepad,
+			shortPressUserEvent,
+			kStart,
+			1.0F,  // value=1.0 → IsPressed()=true, IsDown()=true
+			0.0F   // heldDownSecs=0.0 → IsDown()=true
+			),
+		deleter
+	};
+	if (!syntheticEvent) {
+		logger::error("Failed to allocate synthetic ButtonEvent — short press consumed but no menu opened");
+		return;
 	}
+
+	if (!menuControls->menuOpenHandler->CanProcess(syntheticEvent.get())) {
+		logger::warn("MenuOpenHandler rejected short press — press consumed but no menu opened");
+		return;
+	}
+
+	menuControls->menuOpenHandler->ProcessButton(syntheticEvent.get());
 }

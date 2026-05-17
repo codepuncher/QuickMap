@@ -37,9 +37,10 @@ float ReadHoldDuration()
 
 void OnInputLoaded()
 {
-	auto* handler = InputHandler::GetSingleton();
-	handler->holdDuration = ReadHoldDuration();
-	logger::info("Hold duration: {:.2f}s", handler->holdDuration);
+	auto*       handler = InputHandler::GetSingleton();
+	const float holdDuration = ReadHoldDuration();
+	handler->SetHoldDuration(holdDuration);
+	logger::info("Hold duration: {:.2f}s", holdDuration);
 
 	auto* inputDeviceMgr = RE::BSInputDeviceManager::GetSingleton();
 	if (!inputDeviceMgr) {
@@ -57,7 +58,7 @@ void OnInputLoaded()
 		ui->AddEventSink<RE::MenuOpenCloseEvent>(handler);
 	}
 
-	handler->UpdateShortPressMenu();
+	handler->UpdateShortPressUserEvent();
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
@@ -85,7 +86,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 				break;
 			case SKSE::MessagingInterface::kPostLoadGame:
 			case SKSE::MessagingInterface::kNewGame:
-				InputHandler::GetSingleton()->UpdateShortPressMenu();
+				InputHandler::GetSingleton()->UpdateShortPressUserEvent();
 				break;
 			default:
 				break;

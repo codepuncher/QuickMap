@@ -1,8 +1,8 @@
 # QuickMap
 
-Hold the gamepad **Start button** for a configurable duration to open the **world map**. A short press opens the Journal Menu (or Tween Menu) as normal.
+Hold the gamepad **Start button** for a configurable duration to open the **world map**. A short press opens whatever menu Start is bound to in your controls.
 
-> **Gamepad only.** Vanilla behaviour is fully preserved.
+> **Gamepad only.** Default behaviour is fully preserved.
 
 Inspired by Red Dead Redemption 2's hold-Start-to-open-map mechanic.
 
