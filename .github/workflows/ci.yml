@@ -27,7 +27,7 @@ jobs:
         with:
           source: src
           extensions: cpp,h
-          clangFormatVersion: 19
+          clangFormatVersion: 22
 
   clang-tidy:
     needs: clang-format
