@@ -15,7 +15,9 @@ public:
 		const RE::MenuOpenCloseEvent*               a_event,
 		RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_source) override;
 
-	float       holdDuration{ 1.0F };
+	static constexpr float kDefaultHoldDuration{ 0.5F };
+
+	float       holdDuration{ kDefaultHoldDuration };
 	std::string shortPressMenuName;
 
 	// Queries ControlMap for the menu bound to Start and caches it in shortPressMenuName.

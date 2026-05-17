@@ -62,11 +62,11 @@ Hold the gamepad [b]Start button[/b] for a configurable duration to open the [b]
 
 [size=4][b]Configuration[/b][/size]
 
-Edit [font=Courier New]Data\SKSE\Plugins\QuickMap.ini[/font] to adjust the hold duration (default: 1.0 second):
+Edit [font=Courier New]Data\SKSE\Plugins\QuickMap.ini[/font] to adjust the hold duration (default: 0.5 seconds):
 
 [code]
 [General]
-fHoldDuration=1.0
+fHoldDuration=0.5
 [/code]
 
 [line]
