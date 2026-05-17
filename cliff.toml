@@ -14,7 +14,7 @@ trim = true
 conventional_commits = true
 filter_unconventional = true
 commit_parsers = [
-    { message = "\\(ci\\)", skip = true },
+    { message = "^[a-z]+\\(ci\\)", skip = true },
     { message = "^ci", skip = true },
     { message = "^chore", skip = true },
     { message = "^docs", skip = true },
