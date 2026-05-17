@@ -24,12 +24,13 @@ float ReadHoldDuration()
 	CSimpleIniA ini;
 	const auto  rc = ini.LoadFile(R"(Data\SKSE\Plugins\QuickMap.ini)");
 	if (rc < SI_OK) {
-		logger::warn("QuickMap.ini not found or could not be parsed (rc={}) — using default hold duration 1.0s", static_cast<int>(rc));
+		logger::warn("QuickMap.ini not found or could not be parsed (rc={}) — using default hold duration {:.1f}s", static_cast<int>(rc), InputHandler::kDefaultHoldDuration);
+		return InputHandler::kDefaultHoldDuration;
 	}
-	const auto duration = static_cast<float>(ini.GetDoubleValue("General", "fHoldDuration", 1.0));
+	const auto duration = static_cast<float>(ini.GetDoubleValue("General", "fHoldDuration", InputHandler::kDefaultHoldDuration));
 	if (duration <= 0.0F) {
-		logger::warn("fHoldDuration ({:.2f}) must be positive — using default 1.0", duration);
-		return 1.0F;
+		logger::warn("fHoldDuration ({:.2f}) must be positive — using default {:.1f}", duration, InputHandler::kDefaultHoldDuration);
+		return InputHandler::kDefaultHoldDuration;
 	}
 	return duration;
 }

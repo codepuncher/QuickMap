@@ -32,8 +32,8 @@ Edit `Data\SKSE\Plugins\QuickMap.ini`:
 
 ```ini
 [General]
-; Duration in seconds the Start button must be held to open the map (default: 1.0)
-fHoldDuration=1.0
+; Duration in seconds the Start button must be held to open the map (default: 0.5)
+fHoldDuration=0.5
 ```
 
 Logs are written to:
