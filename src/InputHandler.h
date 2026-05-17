@@ -17,8 +17,8 @@ public:
 
 	static constexpr float kDefaultHoldDuration{ 0.5F };
 
-	float       holdDuration{ kDefaultHoldDuration };
-	std::string shortPressMenuName;
+	float             holdDuration{ kDefaultHoldDuration };
+	RE::BSFixedString shortPressUserEvent;
 
 	// Queries ControlMap for the menu bound to Start and caches it in shortPressMenuName.
 	// Call at kInputLoaded, kPostLoadGame, and kNewGame.
