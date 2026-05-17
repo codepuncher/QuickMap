@@ -95,6 +95,7 @@ jobs:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_group_id: ${{ vars.NEXUSMODS_FILE_GROUP_ID }}
           filename: ${{ steps.package.outputs.zip }}
+          display_name: ${{ github.event.repository.name }}
           version: ${{ steps.version.outputs.value }}
           archive_existing_file: true
 
