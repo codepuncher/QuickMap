@@ -127,7 +127,7 @@ bool InputHandler::ProcessStartButton(const RE::ButtonEvent* btn)
 
 void InputHandler::DispatchShortPress(float held) const
 {
-	if (held > 10.0F) {
+	if (held > holdDuration + 5.0F) {
 		logger::warn("Start press duration {:.1f}s exceeds sanity limit — discarded", held);
 		return;
 	}

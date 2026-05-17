@@ -111,7 +111,7 @@ The DLL lands in `build/msvc/Release/QuickMap.dll`.
 
 When loaded by Skyrim the plugin:
 
-1. **Writes a log** to `Data/SKSE/Plugins/QuickMap.log` via spdlog.
+1. **Writes a log** to `%USERPROFILE%\Documents\My Games\Skyrim Special Edition\SKSE\QuickMap.log` via spdlog.
 2. **Registers an input sink** at `kInputLoaded` to intercept gamepad Start button events.
 3. **Refreshes the short-press binding** at `kInputLoaded`, `kPostLoadGame`, and `kNewGame` by querying `ControlMap`.
 
