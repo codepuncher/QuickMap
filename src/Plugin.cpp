@@ -57,7 +57,7 @@ void OnInputLoaded()
 		ui->AddEventSink<RE::MenuOpenCloseEvent>(handler);
 	}
 
-	handler->UpdateShortPressMenu();
+	handler->UpdateShortPressUserEvent();
 }
 
 SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
@@ -85,7 +85,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 				break;
 			case SKSE::MessagingInterface::kPostLoadGame:
 			case SKSE::MessagingInterface::kNewGame:
-				InputHandler::GetSingleton()->UpdateShortPressMenu();
+				InputHandler::GetSingleton()->UpdateShortPressUserEvent();
 				break;
 			default:
 				break;

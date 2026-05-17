@@ -10,7 +10,7 @@ InputHandler* InputHandler::GetSingleton()
 	return &instance;
 }
 
-void InputHandler::UpdateShortPressMenu()
+void InputHandler::UpdateShortPressUserEvent()
 {
 	auto* controlMap = RE::ControlMap::GetSingleton();
 	if (!controlMap) {
@@ -34,7 +34,7 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 	RE::BSTEventSource<RE::MenuOpenCloseEvent>* /*a_eventSource*/)
 {
 	if (a_event && !a_event->opening && a_event->menuName == RE::JournalMenu::MENU_NAME) {
-		UpdateShortPressMenu();
+		UpdateShortPressUserEvent();
 	}
 	return RE::BSEventNotifyControl::kContinue;
 }

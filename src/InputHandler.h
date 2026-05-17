@@ -22,7 +22,7 @@ public:
 
 	// Queries ControlMap for the user event bound to Start and caches it in shortPressUserEvent.
 	// Call at kInputLoaded, kPostLoadGame, and kNewGame.
-	void UpdateShortPressMenu();
+	void UpdateShortPressUserEvent();
 
 private:
 	InputHandler() = default;
