@@ -8,9 +8,7 @@ public:
 	static InputHandler* GetSingleton();
 
 	InputHandler(const InputHandler&) = delete;
-	InputHandler(InputHandler&&) = delete;
 	InputHandler& operator=(const InputHandler&) = delete;
-	InputHandler& operator=(InputHandler&&) = delete;
 
 	RE::BSEventNotifyControl ProcessEvent(
 		RE::InputEvent* const*               a_events,
