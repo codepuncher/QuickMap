@@ -17,6 +17,8 @@ concurrency:
   group: pr-checks-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   clang-format:
     runs-on: ubuntu-latest
@@ -29,7 +31,7 @@ jobs:
           check-path: src
 
   clang-tidy:
-    needs: clang-format
+    needs: build
     runs-on: windows-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
