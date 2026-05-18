@@ -105,16 +105,15 @@ bool InputHandler::ProcessButton(const RE::ButtonEvent* btn)
 	}
 
 	if (btn->IsUp() && _pressTime) {
-		const auto held = std::chrono::duration<float>(
-			std::chrono::steady_clock::now() - *_pressTime)
-		                      .count();
-		_pressTime.reset();
-
 		if (_mapTriggered) {
 			_mapTriggered = false;
 		} else {
+			const auto held = std::chrono::duration<float>(
+				std::chrono::steady_clock::now() - *_pressTime)
+			                      .count();
 			DispatchShortPress(held);
 		}
+		_pressTime.reset();
 		return true;
 	}
 
