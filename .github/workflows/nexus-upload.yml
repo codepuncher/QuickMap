@@ -40,15 +40,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: v${{ steps.version.outputs.value }}
           fetch-depth: 0
+
+      - name: Compute cliff range
+        id: range
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          PREV="$(git describe --abbrev=0 --tags "v${VERSION}^" 2>/dev/null || echo "")"
+          if [[ -n "$PREV" ]]; then
+            echo "value=${PREV}..v${VERSION}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=v${VERSION}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Generate release notes
         id: cliff
         uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
-          args: --current --strip header
+          args: --strip header ${{ steps.range.outputs.value }}
         env:
           GITHUB_REPO: ${{ github.repository }}
 
