@@ -22,6 +22,7 @@ Options:
 """
 
 import argparse
+import hashlib
 import os
 import urllib.request
 from pathlib import Path
@@ -49,8 +50,9 @@ BG_DARK   = (10,  9,  5)
 GOLD      = (184, 149, 62)
 GOLD_DIM  = (100,  83, 38)
 
-# Font
-FONT_URL    = "https://github.com/google/fonts/raw/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf"
+# Font — pinned to a specific commit for reproducibility
+FONT_URL    = "https://github.com/google/fonts/raw/45071f07c63e863a539442ef3562b71ab1f147a6/ofl/cinzel/Cinzel%5Bwght%5D.ttf"
+FONT_SHA256 = "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34"
 _project    = Path(__file__).parents[1].name.lower()
 _xdg_cache  = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
 FONT_CACHE  = _xdg_cache / _project / "Cinzel-Regular.ttf"
@@ -71,6 +73,9 @@ def ensure_font(custom: str | None) -> Path:
         tmp = FONT_CACHE.with_suffix(".tmp")
         try:
             urllib.request.urlretrieve(FONT_URL, tmp)
+            digest = hashlib.sha256(tmp.read_bytes()).hexdigest()
+            if digest != FONT_SHA256:
+                raise ValueError(f"Font checksum mismatch: expected {FONT_SHA256}, got {digest}")
             tmp.rename(FONT_CACHE)
         except Exception:
             tmp.unlink(missing_ok=True)
