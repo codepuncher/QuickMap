@@ -39,9 +39,6 @@ DEFAULT_HEIGHT   = 638
 DEFAULT_OUTPUT   = Path(__file__).parents[1] / "docs" / "assets" / "banner.png"
 
 BASE_FONT_SIZE = 180
-TITLE_SIZE    = BASE_FONT_SIZE
-SUBTITLE_SIZE = BASE_FONT_SIZE // 3
-TAGS_SIZE     = BASE_FONT_SIZE // 5
 
 DIVIDER_X_PAD = 140
 
