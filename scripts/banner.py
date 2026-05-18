@@ -110,7 +110,7 @@ def radial_vignette(img: Image.Image) -> Image.Image:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate the QuickMap NexusMods banner image.",
+        description="Generate the QuickMap Nexus Mods banner image.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--title",       default=DEFAULT_TITLE,    help="Main title text")
