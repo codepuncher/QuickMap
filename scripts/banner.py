@@ -17,6 +17,7 @@ Options:
     --output PATH       Output file (default: docs/assets/banner.png)
     --width INT         Canvas width  in pixels (default: 1280)
     --height INT        Canvas height in pixels (default: 638)
+    --font-size INT     Base font size in pt (default: 180, minimum: 30)
     --no-vignette       Disable the radial vignette effect
 """
 
