@@ -19,6 +19,7 @@ public:
 		RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_source) override;
 
 	static constexpr float         kDefaultHoldDuration{ 0.5F };
+	static constexpr float         kMaxHoldDuration{ 5.0F };
 	static constexpr std::uint32_t kDefaultButton{
 		static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart)
 	};

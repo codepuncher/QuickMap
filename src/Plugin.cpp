@@ -29,6 +29,10 @@ float ReadHoldDuration(const CSimpleIniA& a_ini)
 		logger::warn("fHoldDuration ({:.2f}) must be positive — using default {:.1f}", duration, InputHandler::kDefaultHoldDuration);
 		return InputHandler::kDefaultHoldDuration;
 	}
+	if (duration > InputHandler::kMaxHoldDuration) {
+		logger::warn("fHoldDuration ({:.2f}) exceeds maximum {:.1f} — capping", duration, InputHandler::kMaxHoldDuration);
+		return InputHandler::kMaxHoldDuration;
+	}
 	return duration;
 }
 
