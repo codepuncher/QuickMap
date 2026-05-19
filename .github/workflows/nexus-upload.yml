@@ -76,13 +76,19 @@ jobs:
             exit 1
           fi
           ZIP="dist/${NAME}-${VERSION}.zip"
+          DOWNLOADED=false
           for i in {1..6}; do
-            gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern "${NAME}-${VERSION}.zip" --dir dist/ && break
-            echo "Asset not yet available, retrying in 10s..." >&2
-            sleep 10
-          done || { echo "Error: asset download failed after all retries" >&2; exit 1; }
-          if [[ ! -f "$ZIP" ]]; then
-            echo "Error: artifact not found: $ZIP" >&2
+            if gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --pattern "${NAME}-${VERSION}.zip" --dir dist/; then
+              DOWNLOADED=true
+              break
+            fi
+            if [[ $i -lt 6 ]]; then
+              echo "Asset not yet available, retrying in 10s..." >&2
+              sleep 10
+            fi
+          done
+          if [[ "$DOWNLOADED" != "true" ]]; then
+            echo "Error: asset download failed after all retries" >&2
             exit 1
           fi
           echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
