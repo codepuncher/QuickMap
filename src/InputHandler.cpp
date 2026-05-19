@@ -80,6 +80,10 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 		}
 	}
 
+	// kStop halts the entire frame's event batch for all downstream sinks, not just the
+	// configured button. Concurrent input in the same frame is intentionally suppressed
+	// while a hold is in progress. Acceptable: simultaneous Start/Back + action is not a
+	// normal use case in Skyrim.
 	return shouldBlock ? RE::BSEventNotifyControl::kStop : RE::BSEventNotifyControl::kContinue;
 }
 
@@ -122,7 +126,12 @@ bool InputHandler::ProcessButton(const RE::ButtonEvent* btn)
 
 void InputHandler::DispatchShortPress(float held) const
 {
-	if (held > holdDuration + 5.0F) {
+	// Best-effort guard against stale _pressTime from process suspension (e.g. Alt-Tab).
+	// Any legitimate short press has held < holdDuration <= kMaxHoldDuration, so this only
+	// fires when _pressTime accumulated wall-clock time during suspension while game time
+	// was frozen. Known limitation: suspensions shorter than kMaxHoldDuration seconds may
+	// still dispatch a spurious short press.
+	if (held > kMaxHoldDuration) {
 		logger::warn("{} press duration {:.1f}s exceeds sanity limit — discarded", buttonName, held);
 		return;
 	}

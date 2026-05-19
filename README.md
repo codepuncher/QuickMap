@@ -34,7 +34,7 @@ Edit `Data\SKSE\Plugins\QuickMap.ini`:
 
 ```ini
 [General]
-; Duration in seconds the button must be held to open the map (default: 0.5)
+; Duration in seconds the button must be held to open the map (default: 0.5, max: 5.0)
 fHoldDuration=0.5
 ; Button to hold for the map. Short press performs the button's normal function.
 ; Valid values: Start, Back (case-insensitive)
