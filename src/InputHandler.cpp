@@ -11,6 +11,7 @@ InputHandler* InputHandler::GetSingleton()
 void InputHandler::SetButtons(std::vector<ButtonConfig> a_configs)
 {
 	_buttons.clear();
+	_buttons.reserve(a_configs.size());
 	for (auto& cfg : a_configs) {
 		ButtonState state;
 		static_cast<ButtonConfig&>(state) = std::move(cfg);
