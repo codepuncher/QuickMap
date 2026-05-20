@@ -90,12 +90,12 @@ std::vector<ButtonConfig> ReadButtons(const CSimpleIniA& a_ini)
 		{ .iniKey = "sButtonBackAction", .keyCode = static_cast<std::uint32_t>(Key::kBack), .name = "Back" },
 	} };
 
-	// Detect whether any new-style keys are present. Absent key returns nullptr.
-	const bool hasNewStyle =
-		a_ini.GetValue("General", "sButtonStartAction", nullptr) != nullptr ||
-		a_ini.GetValue("General", "sButtonBackAction", nullptr) != nullptr;
+	// Absent key returns nullptr. Fall back to legacy if neither per-button key is present.
+	const bool hasLegacyConfig =
+		a_ini.GetValue("General", "sButtonStartAction", nullptr) == nullptr &&
+		a_ini.GetValue("General", "sButtonBackAction", nullptr) == nullptr;
 
-	if (!hasNewStyle) {
+	if (hasLegacyConfig) {
 		// Legacy fallback: [General] sButton=Start|Back → Map action.
 		static const std::unordered_map<std::string, ButtonConfig> kLegacyMap{
 			{ "start", { .keyCode = static_cast<std::uint32_t>(Key::kStart), .name = "Start", .action = LongPressAction::kMap } },
