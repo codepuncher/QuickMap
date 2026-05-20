@@ -12,6 +12,7 @@
 #include <SimpleIni.h>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <memory>
 #include <optional>
