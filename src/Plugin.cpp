@@ -159,7 +159,8 @@ void OnInputLoaded()
 			{ LongPressAction::kQuests, "Quests" },
 			{ LongPressAction::kJournal, "Journal" },
 		};
-		const auto actionName = kActionNames.contains(btn.action) ? kActionNames.at(btn.action) : "Unknown";
+		const auto it = kActionNames.find(btn.action);
+		const auto actionName = it != kActionNames.end() ? it->second : "Unknown";
 		logger::info("{} → {}", btn.name, actionName);
 	}
 
