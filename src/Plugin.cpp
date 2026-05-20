@@ -55,6 +55,7 @@ LongPressAction ReadLongPressAction(const std::string& raw, const char* iniKey)
 		{ "map", LongPressAction::kMap },
 		{ "system", LongPressAction::kSystem },
 		{ "quests", LongPressAction::kQuests },
+		{ "stats", LongPressAction::kStats },
 		{ "journal", LongPressAction::kJournal },
 		{ "none", LongPressAction::kNone },
 	};
@@ -66,7 +67,7 @@ LongPressAction ReadLongPressAction(const std::string& raw, const char* iniKey)
 
 	const auto it = kActionMap.find(lower);
 	if (it == kActionMap.end()) {
-		logger::warn("{}='{}' is not a recognised action (valid: Map, System, Quests, Journal, None) — disabling button", iniKey, raw);
+		logger::warn("{}='{}' is not a recognised action (valid: Map, System, Quests, Stats, Journal, None) — disabling button", iniKey, raw);
 		return LongPressAction::kNone;
 	}
 	return it->second;
@@ -157,6 +158,7 @@ void OnInputLoaded()
 			{ LongPressAction::kMap, "Map" },
 			{ LongPressAction::kSystem, "System" },
 			{ LongPressAction::kQuests, "Quests" },
+			{ LongPressAction::kStats, "Stats" },
 			{ LongPressAction::kJournal, "Journal" },
 		};
 		const auto it = kActionNames.find(btn.action);

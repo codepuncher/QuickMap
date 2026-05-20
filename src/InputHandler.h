@@ -33,6 +33,7 @@ public:
 		kMap,
 		kSystem,
 		kQuests,
+		kStats,
 		kJournal,
 	};
 

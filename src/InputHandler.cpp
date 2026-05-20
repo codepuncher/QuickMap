@@ -155,6 +155,11 @@ void InputHandler::DispatchLongPress(const ButtonState& state)
 		uiQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
 		break;
 
+	case LongPressAction::kStats:
+		*sJournalTabIdx = JournalTab::kStats;
+		uiQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+		break;
+
 	case LongPressAction::kJournal:
 		uiQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
 		break;
