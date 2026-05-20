@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 class InputHandler :
 	public RE::BSTEventSink<RE::InputEvent*>,
 	public RE::BSTEventSink<RE::MenuOpenCloseEvent>
@@ -18,17 +20,33 @@ public:
 		const RE::MenuOpenCloseEvent*               a_event,
 		RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_source) override;
 
-	static constexpr float         kDefaultHoldDuration{ 0.5F };
-	static constexpr float         kMaxHoldDuration{ 5.0F };
-	static constexpr std::uint32_t kDefaultButton{
-		static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart)
+	static constexpr float kDefaultHoldDuration{ 0.5F };
+	static constexpr float kMaxHoldDuration{ 5.0F };
+
+	enum class LongPressAction
+	{
+		kNone,
+		kMap,
+		kSystem,
+		kQuests,
+		kJournal,
+	};
+
+	struct ButtonConfig
+	{
+		std::uint32_t   keyCode{};
+		std::string     name;
+		LongPressAction action{ LongPressAction::kNone };
 	};
 
 	void SetHoldDuration(float a_duration) noexcept { holdDuration = a_duration; }
-	void SetButton(std::uint32_t a_keyCode, std::string a_name) noexcept;
 
-	// Queries ControlMap for the user event bound to the configured button and caches it.
-	// Call at kInputLoaded, kPostLoadGame, and kNewGame.
+	// Replace the tracked button list. Entries with action == kNone are excluded by the caller.
+	// Call before registering the input sink.
+	void SetButtons(std::vector<ButtonConfig> a_configs);
+
+	// Queries ControlMap for the short-press user event for every tracked button and caches it.
+	// Call at kInputLoaded, kPostLoadGame, kNewGame, and on JournalMenu close.
 	void UpdateShortPressBinding();
 
 	~InputHandler() override = default;
@@ -36,13 +54,28 @@ public:
 private:
 	InputHandler() = default;
 
-	bool ProcessButton(const RE::ButtonEvent* btn);
-	void DispatchShortPress(float held) const;
+	// Game-internal variable controlling which tab the Journal Menu opens on.
+	// RELOCATION_ID(520167 = SE 1.5.97, 406697 = AE 1.6.x).
+	// Sourced from stay-at-system-page (MIT) and confirmed in jpsteel/skyrim-questjournal.
+	enum class JournalTab : std::uint32_t
+	{
+		kQuest = 0,
+		kStats = 1,
+		kSystem = 2,
+	};
+	static inline REL::Relocation<JournalTab*> sJournalTabIdx{ RELOCATION_ID(520167, 406697) };
 
-	float                                                holdDuration{ kDefaultHoldDuration };
-	std::uint32_t                                        buttonKeyCode{ kDefaultButton };
-	std::string                                          buttonName{ "Start" };
-	RE::BSFixedString                                    shortPressUserEvent;
-	std::optional<std::chrono::steady_clock::time_point> _pressTime;
-	bool                                                 _mapTriggered{ false };
+	struct ButtonState : ButtonConfig
+	{
+		RE::BSFixedString                                    shortPressUserEvent;
+		std::optional<std::chrono::steady_clock::time_point> pressTime;
+		bool                                                 triggered{ false };
+	};
+
+	bool        ProcessButton(const RE::ButtonEvent* btn, ButtonState& state) const;
+	static void DispatchShortPress(const ButtonState& state, float held);
+	static void DispatchLongPress(const ButtonState& state);
+
+	float                    holdDuration{ kDefaultHoldDuration };
+	std::vector<ButtonState> _buttons;
 };

@@ -8,10 +8,14 @@ InputHandler* InputHandler::GetSingleton()
 	return &instance;
 }
 
-void InputHandler::SetButton(std::uint32_t a_keyCode, std::string a_name) noexcept
+void InputHandler::SetButtons(std::vector<ButtonConfig> a_configs)
 {
-	buttonKeyCode = a_keyCode;
-	buttonName = std::move(a_name);
+	_buttons.clear();
+	for (auto& cfg : a_configs) {
+		ButtonState state;
+		static_cast<ButtonConfig&>(state) = std::move(cfg);
+		_buttons.push_back(std::move(state));
+	}
 }
 
 void InputHandler::UpdateShortPressBinding()
@@ -19,16 +23,19 @@ void InputHandler::UpdateShortPressBinding()
 	auto* controlMap = RE::ControlMap::GetSingleton();
 	if (!controlMap) {
 		logger::error("ControlMap unavailable — short press will have no effect");
-		shortPressUserEvent = "";
+		for (auto& bs : _buttons) {
+			bs.shortPressUserEvent = "";
+		}
 		return;
 	}
 
-	shortPressUserEvent = controlMap->GetUserEventName(buttonKeyCode, RE::INPUT_DEVICE::kGamepad);
-
-	if (shortPressUserEvent.empty()) {
-		logger::warn("{} has no binding in kGameplay context — short press disabled", buttonName);
-	} else {
-		logger::info("{} short press user event: '{}'", buttonName, shortPressUserEvent);
+	for (auto& bs : _buttons) {
+		bs.shortPressUserEvent = controlMap->GetUserEventName(bs.keyCode, RE::INPUT_DEVICE::kGamepad);
+		if (bs.shortPressUserEvent.empty()) {
+			logger::warn("{} has no binding in ControlMap — short press disabled", bs.name);
+		} else {
+			logger::info("{} short press user event: '{}'", bs.name, bs.shortPressUserEvent);
+		}
 	}
 }
 
@@ -50,13 +57,14 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 		return RE::BSEventNotifyControl::kContinue;
 	}
 
-	// If any pausing menu is open (Journal, Map, Inventory, Console, etc.), pass all input
-	// through so the active menu can handle the configured button normally. Also clears any
-	// captured press so _pressTime can't fire a spurious dispatch once the menu closes.
+	// If any pausing menu is open, pass all input through and clear any captured press so it
+	// can't fire a spurious dispatch once the menu closes.
 	auto* ui = RE::UI::GetSingleton();
 	if (ui && ui->GameIsPaused()) {
-		_pressTime.reset();
-		_mapTriggered = false;
+		for (auto& bs : _buttons) {
+			bs.pressTime.reset();
+			bs.triggered = false;
+		}
 		return RE::BSEventNotifyControl::kContinue;
 	}
 
@@ -70,78 +78,111 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 		if (btn->GetDevice() != RE::INPUT_DEVICE::kGamepad) {
 			continue;
 		}
-		if (btn->GetIDCode() != buttonKeyCode) {
-			continue;
-		}
-		if (ProcessButton(btn)) {
-			shouldBlock = true;
+		for (auto& bs : _buttons) {
+			if (btn->GetIDCode() == bs.keyCode) {
+				if (ProcessButton(btn, bs)) {
+					shouldBlock = true;
+				}
+			}
 		}
 	}
 
-	// kStop halts the entire frame's event batch for all downstream sinks, not just the
-	// configured button. Concurrent input in the same frame is intentionally suppressed
-	// while a hold is in progress. Acceptable: simultaneous Start/Back + action is not a
-	// normal use case in Skyrim.
+	// kStop halts the entire frame's event batch for all downstream sinks. With both Start
+	// and Back tracked by default, this fires on every press of either managed button.
+	// Pressing any other input while a managed button hold is in progress is suppressed from
+	// downstream sinks. This is intentional: hold detection requires exclusive ownership of
+	// those frames. Selective kStop per event is not feasible with CommonLib's batch API.
 	return shouldBlock ? RE::BSEventNotifyControl::kStop : RE::BSEventNotifyControl::kContinue;
 }
 
-bool InputHandler::ProcessButton(const RE::ButtonEvent* btn)
+bool InputHandler::ProcessButton(const RE::ButtonEvent* btn, ButtonState& state) const
 {
 	if (btn->IsDown()) {
-		_pressTime = std::chrono::steady_clock::now();
-		_mapTriggered = false;
+		state.pressTime = std::chrono::steady_clock::now();
+		state.triggered = false;
 		return true;
 	}
 
-	if (btn->IsHeld() && _pressTime) {
-		if (!_mapTriggered && btn->HeldDuration() >= holdDuration) {
-			_mapTriggered = true;
-			auto* uiQueue = RE::UIMessageQueue::GetSingleton();
-			if (!uiQueue) {
-				logger::error("UIMessageQueue unavailable — hold threshold reached but map not opened");
-			} else {
-				uiQueue->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
-			}
+	if (btn->IsHeld() && state.pressTime) {
+		if (!state.triggered && btn->HeldDuration() >= holdDuration) {
+			state.triggered = true;
+			DispatchLongPress(state);
 		}
 		return true;
 	}
 
-	if (btn->IsUp() && _pressTime) {
-		if (_mapTriggered) {
-			_mapTriggered = false;
+	if (btn->IsUp() && state.pressTime) {
+		if (state.triggered) {
+			state.triggered = false;
 		} else {
 			const auto held = std::chrono::duration<float>(
-				std::chrono::steady_clock::now() - *_pressTime)
+				std::chrono::steady_clock::now() - *state.pressTime)
 			                      .count();
-			DispatchShortPress(held);
+			DispatchShortPress(state, held);
 		}
-		_pressTime.reset();
+		state.pressTime.reset();
 		return true;
 	}
 
 	return false;
 }
 
-void InputHandler::DispatchShortPress(float held) const
+void InputHandler::DispatchLongPress(const ButtonState& state)
 {
-	// Best-effort guard against stale _pressTime from process suspension (e.g. Alt-Tab).
-	// Any legitimate short press has held < holdDuration <= kMaxHoldDuration, so this only
-	// fires when _pressTime accumulated wall-clock time during suspension while game time
-	// was frozen. Known limitation: suspensions shorter than kMaxHoldDuration seconds may
-	// still dispatch a spurious short press.
-	if (held > kMaxHoldDuration) {
-		logger::warn("{} press duration {:.1f}s exceeds sanity limit — discarded", buttonName, held);
+	auto* uiQueue = RE::UIMessageQueue::GetSingleton();
+	if (!uiQueue) {
+		logger::error("{} long press: UIMessageQueue unavailable — action not dispatched", state.name);
 		return;
 	}
 
-	if (shortPressUserEvent.empty()) {
-		logger::warn("{} short press has no binding — press consumed but no menu opened", buttonName);
+	switch (state.action) {
+	case LongPressAction::kMap:
+		uiQueue->AddMessage(RE::MapMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+		break;
+
+	case LongPressAction::kSystem:
+		// Write sJournalTabIdx only after confirming uiQueue is available. If kShow is
+		// subsequently blocked by the game (scripted scene, KI lockout, etc.) the tab index
+		// stays set to kSystem until the player next navigates inside the Journal — it heals
+		// after one open/tab-change cycle.
+		*sJournalTabIdx = JournalTab::kSystem;
+		uiQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+		break;
+
+	case LongPressAction::kQuests:
+		*sJournalTabIdx = JournalTab::kQuest;
+		uiQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+		break;
+
+	case LongPressAction::kJournal:
+		uiQueue->AddMessage(RE::JournalMenu::MENU_NAME, RE::UI_MESSAGE_TYPE::kShow, nullptr);
+		break;
+
+	default:
+		break;
+	}
+}
+
+void InputHandler::DispatchShortPress(const ButtonState& state, float held)
+{
+	// Best-effort guard against stale pressTime from process suspension (e.g. Alt-Tab).
+	// Any legitimate short press has held < holdDuration <= kMaxHoldDuration, so this only
+	// fires when pressTime accumulated wall-clock time during suspension while game time
+	// was frozen. Known limitation: suspensions shorter than kMaxHoldDuration seconds may
+	// still dispatch a spurious short press.
+	if (held > kMaxHoldDuration) {
+		logger::warn("{} press duration {:.1f}s exceeds sanity limit — discarded", state.name, held);
+		return;
+	}
+
+	if (state.shortPressUserEvent.empty()) {
+		logger::warn("{} short press has no binding — press consumed but no menu opened", state.name);
 		return;
 	}
 
 	auto* menuControls = RE::MenuControls::GetSingleton();
 	if (!menuControls || !menuControls->menuOpenHandler) {
-		logger::error("MenuControls or menuOpenHandler unavailable — short press consumed but no menu opened");
+		logger::error("MenuControls or menuOpenHandler unavailable — {} short press consumed but no menu opened", state.name);
 		return;
 	}
 
@@ -152,20 +193,20 @@ void InputHandler::DispatchShortPress(float held) const
 	std::unique_ptr<RE::ButtonEvent, decltype(deleter)> syntheticEvent{
 		RE::ButtonEvent::Create(
 			RE::INPUT_DEVICE::kGamepad,
-			shortPressUserEvent,
-			buttonKeyCode,
+			state.shortPressUserEvent,
+			state.keyCode,
 			1.0F,  // value=1.0 → IsPressed()=true, IsDown()=true
 			0.0F   // heldDownSecs=0.0 → IsDown()=true
 			),
 		deleter
 	};
 	if (!syntheticEvent) {
-		logger::error("Failed to allocate synthetic ButtonEvent — short press consumed but no menu opened");
+		logger::error("Failed to allocate synthetic ButtonEvent — {} short press consumed but no menu opened", state.name);
 		return;
 	}
 
 	if (!menuControls->menuOpenHandler->CanProcess(syntheticEvent.get())) {
-		logger::warn("MenuOpenHandler rejected short press — press consumed but no menu opened");
+		logger::warn("MenuOpenHandler rejected {} short press — press consumed but no menu opened", state.name);
 		return;
 	}
 

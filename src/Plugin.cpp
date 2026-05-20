@@ -47,34 +47,89 @@ float ReadHoldDuration(const CSimpleIniA& a_ini)
 	return duration;
 }
 
-struct ButtonDef
-{
-	std::uint32_t keyCode;
-	std::string   displayName;
-};
+using LongPressAction = InputHandler::LongPressAction;
 
-ButtonDef ReadButton(const CSimpleIniA& a_ini)
+LongPressAction ReadLongPressAction(const std::string& raw)
 {
-	using Key = RE::BSWin32GamepadDevice::Key;
-
-	static const std::unordered_map<std::string, ButtonDef> kButtonMap{
-		{ "start", { .keyCode = static_cast<std::uint32_t>(Key::kStart), .displayName = "Start" } },
-		{ "back", { .keyCode = static_cast<std::uint32_t>(Key::kBack), .displayName = "Back" } },
+	static const std::unordered_map<std::string, LongPressAction> kActionMap{
+		{ "map", LongPressAction::kMap },
+		{ "system", LongPressAction::kSystem },
+		{ "quests", LongPressAction::kQuests },
+		{ "journal", LongPressAction::kJournal },
+		{ "none", LongPressAction::kNone },
 	};
 
-	std::string raw = a_ini.GetValue("General", "sButton", "Start");
 	std::string lower = raw;
 	std::ranges::transform(lower, lower.begin(), [](unsigned char c) {
 		return static_cast<char>(std::tolower(c));
 	});
 
-	const auto it = kButtonMap.find(lower);
-	if (it == kButtonMap.end()) {
-		logger::warn("sButton '{}' is not a recognised button (valid: Start, Back) — using Start", raw);
-		return { .keyCode = InputHandler::kDefaultButton, .displayName = "Start" };
+	const auto it = kActionMap.find(lower);
+	if (it == kActionMap.end()) {
+		logger::warn("'{}' is not a recognised action (valid: Map, System, Quests, Journal, None) — disabling button", raw);
+		return LongPressAction::kNone;
+	}
+	return it->second;
+}
+
+using ButtonConfig = InputHandler::ButtonConfig;
+
+std::vector<ButtonConfig> ReadButtons(const CSimpleIniA& a_ini)
+{
+	using Key = RE::BSWin32GamepadDevice::Key;
+
+	struct ButtonDef
+	{
+		const char*   iniKey;
+		std::uint32_t keyCode;
+		const char*   name;
+	};
+
+	static const std::array<ButtonDef, 2> kButtonDefs{ {
+		{ .iniKey = "sButtonStartAction", .keyCode = static_cast<std::uint32_t>(Key::kStart), .name = "Start" },
+		{ .iniKey = "sButtonBackAction", .keyCode = static_cast<std::uint32_t>(Key::kBack), .name = "Back" },
+	} };
+
+	// Detect whether any new-style keys are present. Absent key returns nullptr.
+	const bool hasNewStyle =
+		a_ini.GetValue("General", "sButtonStartAction", nullptr) != nullptr ||
+		a_ini.GetValue("General", "sButtonBackAction", nullptr) != nullptr;
+
+	if (!hasNewStyle) {
+		// Legacy fallback: [General] sButton=Start|Back → Map action.
+		static const std::unordered_map<std::string, ButtonConfig> kLegacyMap{
+			{ "start", { .keyCode = static_cast<std::uint32_t>(Key::kStart), .name = "Start", .action = LongPressAction::kMap } },
+			{ "back", { .keyCode = static_cast<std::uint32_t>(Key::kBack), .name = "Back", .action = LongPressAction::kMap } },
+		};
+
+		std::string raw = a_ini.GetValue("General", "sButton", "Start");
+		std::string lower = raw;
+		std::ranges::transform(lower, lower.begin(), [](unsigned char c) {
+			return static_cast<char>(std::tolower(c));
+		});
+
+		const auto it = kLegacyMap.find(lower);
+		if (it == kLegacyMap.end()) {
+			logger::warn("sButton '{}' is not a recognised button (valid: Start, Back) — using Start", raw);
+			return { { .keyCode = static_cast<std::uint32_t>(Key::kStart), .name = "Start", .action = LongPressAction::kMap } };
+		}
+		logger::info("Legacy config: {} → Map", it->second.name);
+		return { it->second };
 	}
 
-	return it->second;
+	std::vector<ButtonConfig> result;
+	for (const auto& def : kButtonDefs) {
+		const char* raw = a_ini.GetValue("General", def.iniKey, nullptr);
+		if (!raw) {
+			continue;  // absent key → kNone, no warning
+		}
+		const auto action = ReadLongPressAction(raw);
+		if (action == LongPressAction::kNone) {
+			continue;  // kNone entries are excluded
+		}
+		result.push_back({ .keyCode = def.keyCode, .name = def.name, .action = action });
+	}
+	return result;
 }
 
 void OnInputLoaded()
@@ -91,16 +146,30 @@ void OnInputLoaded()
 	handler->SetHoldDuration(holdDuration);
 	logger::info("Hold duration: {:.2f}s", holdDuration);
 
-	auto [buttonKeyCode, buttonName] = ReadButton(ini);
-	logger::info("Trigger button: {}", buttonName);
-	handler->SetButton(buttonKeyCode, std::move(buttonName));
+	auto buttons = ReadButtons(ini);
+	if (buttons.empty()) {
+		logger::warn("No buttons configured — QuickMap is inactive");
+		return;
+	}
+
+	for (const auto& btn : buttons) {
+		static const std::unordered_map<LongPressAction, std::string_view> kActionNames{
+			{ LongPressAction::kMap, "Map" },
+			{ LongPressAction::kSystem, "System" },
+			{ LongPressAction::kQuests, "Quests" },
+			{ LongPressAction::kJournal, "Journal" },
+		};
+		const auto actionName = kActionNames.contains(btn.action) ? kActionNames.at(btn.action) : "Unknown";
+		logger::info("{} → {}", btn.name, actionName);
+	}
+
+	handler->SetButtons(std::move(buttons));
 
 	auto* inputDeviceMgr = RE::BSInputDeviceManager::GetSingleton();
 	if (!inputDeviceMgr) {
 		logger::error("Failed to get BSInputDeviceManager");
 		return;
 	}
-
 	inputDeviceMgr->PrependEventSink(handler);
 	logger::info("Input sink registered");
 
