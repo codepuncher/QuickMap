@@ -121,7 +121,7 @@ std::vector<ButtonConfig> ReadButtons(const CSimpleIniA& a_ini)
 
 	if (!hasNewStyleKeys) {
 		// No INI keys at all — apply new defaults.
-		logger::info("No INI keys found — applying defaults (Start=Map, Back=System)");
+		logger::info("No button action keys found — applying defaults (Start=Map, Back=System)");
 		return {
 			{ .keyCode = static_cast<std::uint32_t>(Key::kStart), .name = "Start", .action = LongPressAction::kMap },
 			{ .keyCode = static_cast<std::uint32_t>(Key::kBack), .name = "Back", .action = LongPressAction::kSystem },
