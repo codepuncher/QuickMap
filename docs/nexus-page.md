@@ -2,7 +2,7 @@
 
 ## Short Description
 
-Hold a configurable gamepad button (Start or Back, default: Start) to open the map. A short press opens the button's normal menu.
+Hold a gamepad button (Start or Back) to open a menu directly — map, journal, quests, stats or system page. Each button is independently configurable. Short press still works normally.
 
 ---
 
@@ -21,13 +21,19 @@ Hold a configurable gamepad button (Start or Back, default: Start) to open the m
 
 ```bbcode
 [center][size=5][b]QuickMap[/b][/size]
-[i]Hold Start or Back · Open the Map[/i][/center]
+[i]Hold Start · Open the Map. Hold Back · Open the System Page.[/i][/center]
 
 [line]
 
 [size=4][b]Overview[/b][/size]
 
-Hold a configurable gamepad button (Start or Back, default: [b]Start[/b]) for a configurable duration to open the [b]map[/b] directly. A short press opens the button's normal menu.
+Hold a gamepad button for a configurable duration to jump directly to a menu. Each button's action is independently configurable. A short press opens the button's normal menu as usual.
+
+[b]Defaults:[/b]
+[list]
+[*]Hold [b]Start[/b] → open the [b]Map[/b]
+[*]Hold [b]Back[/b] → open the [b]Journal System page[/b]
+[/list]
 
 [color=#ffcc00][b]Gamepad only.[/b][/color]
 
@@ -66,12 +72,25 @@ Edit [font=Courier New]Data\SKSE\Plugins\QuickMap.ini[/font]:
 
 [code]
 [General]
-; Duration in seconds the button must be held to open the map (default: 0.5, max: 5.0)
+; Duration in seconds a button must be held to trigger its long-press action (default: 0.5, max: 5.0)
 fHoldDuration=0.5
-; Button to hold for the map. Short press performs the button's normal function.
-; Valid values: Start, Back (case-insensitive)
-sButton=Start
+; Long-press action for the Start (Menu) button. Short press performs the button's normal function.
+; Valid values: Map, System, Quests, Stats, Journal, None (case-insensitive)
+sButtonStartAction=Map
+; Long-press action for the Back (View) button. Short press performs the button's normal function.
+; Valid values: Map, System, Quests, Stats, Journal, None (case-insensitive)
+sButtonBackAction=System
 [/code]
+
+[b]Valid actions:[/b]
+[list]
+[*][b]Map[/b] — opens the world map
+[*][b]System[/b] — opens the Journal on the System tab
+[*][b]Quests[/b] — opens the Journal on the Quests tab
+[*][b]Stats[/b] — opens the Journal on the Stats tab
+[*][b]Journal[/b] — opens the Journal on the last-visited tab
+[*][b]None[/b] — button not intercepted
+[/list]
 
 [line]
 
