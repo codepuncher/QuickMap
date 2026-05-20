@@ -49,7 +49,7 @@ float ReadHoldDuration(const CSimpleIniA& a_ini)
 
 using LongPressAction = InputHandler::LongPressAction;
 
-LongPressAction ReadLongPressAction(const std::string& raw, const char* iniKey)
+LongPressAction ReadLongPressAction(std::string_view raw, const char* iniKey)
 {
 	static const std::unordered_map<std::string, LongPressAction> kActionMap{
 		{ "map", LongPressAction::kMap },
@@ -60,7 +60,7 @@ LongPressAction ReadLongPressAction(const std::string& raw, const char* iniKey)
 		{ "none", LongPressAction::kNone },
 	};
 
-	std::string lower = raw;
+	std::string lower{ raw };
 	std::ranges::transform(lower, lower.begin(), [](unsigned char c) {
 		return static_cast<char>(std::tolower(c));
 	});
