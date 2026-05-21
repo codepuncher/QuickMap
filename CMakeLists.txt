@@ -116,9 +116,7 @@ else()
     set(_default_deploy "${CMAKE_BINARY_DIR}/deploy/${PROJECT_NAME}")
 endif()
 
-set(DEPLOY_DIR
-    "${_default_deploy}"
-    CACHE PATH "Deploy destination (set SKYRIM_MODS_FOLDER or SKYRIM_FOLDER in .env)")
+set(DEPLOY_DIR "${_default_deploy}")
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION "${DEPLOY_DIR}/SKSE/Plugins")
 
