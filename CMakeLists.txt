@@ -122,7 +122,7 @@ set(DEPLOY_DIR_OVERRIDE
 
 # Migrate legacy -DDEPLOY_DIR=... cache entries to DEPLOY_DIR_OVERRIDE so existing
 # build trees don't silently lose their override.
-if(DEFINED CACHE{DEPLOY_DIR})
+if(DEFINED CACHE{DEPLOY_DIR} AND DEPLOY_DIR_OVERRIDE STREQUAL "")
     message(WARNING "DEPLOY_DIR is no longer a supported cache variable. "
                     "Migrating '${DEPLOY_DIR}' to DEPLOY_DIR_OVERRIDE. "
                     "Use -DDEPLOY_DIR_OVERRIDE=... in future configures.")
