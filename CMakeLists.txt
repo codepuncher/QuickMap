@@ -116,7 +116,16 @@ else()
     set(_default_deploy "${CMAKE_BINARY_DIR}/deploy/${PROJECT_NAME}")
 endif()
 
-if(NOT DEFINED CACHE{DEPLOY_DIR})
+set(DEPLOY_DIR_OVERRIDE
+    ""
+    CACHE PATH "Override deploy destination (leave empty to derive from SKYRIM_MODS_FOLDER or SKYRIM_FOLDER in .env)")
+
+# Always clear then recompute so .env changes take effect without a cache wipe.
+# DEPLOY_DIR_OVERRIDE (if set) wins over the env-derived default.
+unset(DEPLOY_DIR CACHE)
+if(DEPLOY_DIR_OVERRIDE)
+    set(DEPLOY_DIR "${DEPLOY_DIR_OVERRIDE}")
+else()
     set(DEPLOY_DIR "${_default_deploy}")
 endif()
 
