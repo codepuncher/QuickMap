@@ -116,7 +116,9 @@ else()
     set(_default_deploy "${CMAKE_BINARY_DIR}/deploy/${PROJECT_NAME}")
 endif()
 
-set(DEPLOY_DIR "${_default_deploy}")
+if(NOT DEFINED CACHE{DEPLOY_DIR})
+    set(DEPLOY_DIR "${_default_deploy}")
+endif()
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION "${DEPLOY_DIR}/SKSE/Plugins")
 
