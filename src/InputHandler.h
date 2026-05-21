@@ -1,5 +1,11 @@
 #pragma once
 
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+
 class InputHandler :
 	public RE::BSTEventSink<RE::InputEvent*>,
 	public RE::BSTEventSink<RE::MenuOpenCloseEvent>
@@ -18,17 +24,33 @@ public:
 		const RE::MenuOpenCloseEvent*               a_event,
 		RE::BSTEventSource<RE::MenuOpenCloseEvent>* a_source) override;
 
-	static constexpr float         kDefaultHoldDuration{ 0.5F };
-	static constexpr float         kMaxHoldDuration{ 5.0F };
-	static constexpr std::uint32_t kDefaultButton{
-		static_cast<std::uint32_t>(RE::BSWin32GamepadDevice::Key::kStart)
+	static constexpr float kDefaultHoldDuration{ 0.5F };
+	static constexpr float kMaxHoldDuration{ 5.0F };
+
+	enum class LongPressAction
+	{
+		kNone,
+		kMap,
+		kSystem,
+		kQuests,
+		kStats,
+	};
+
+	struct ButtonConfig
+	{
+		std::uint32_t   keyCode{};
+		std::string     name;
+		LongPressAction action{ LongPressAction::kNone };
 	};
 
 	void SetHoldDuration(float a_duration) noexcept { holdDuration = a_duration; }
-	void SetButton(std::uint32_t a_keyCode, std::string a_name) noexcept;
 
-	// Queries ControlMap for the user event bound to the configured button and caches it.
-	// Call at kInputLoaded, kPostLoadGame, and kNewGame.
+	// Replace the tracked button list. Entries with action == kNone are excluded by the caller.
+	// Call before registering the input sink.
+	void SetButtons(std::vector<ButtonConfig> a_configs);
+
+	// Queries ControlMap for the short-press user event for every tracked button and caches it.
+	// Call at kInputLoaded, kPostLoadGame, kNewGame, and on JournalMenu close.
 	void UpdateShortPressBinding();
 
 	~InputHandler() override = default;
@@ -36,13 +58,36 @@ public:
 private:
 	InputHandler() = default;
 
-	bool ProcessButton(const RE::ButtonEvent* btn);
-	void DispatchShortPress(float held) const;
+	// Game-internal variable controlling which tab the Journal Menu opens on.
+	// RELOCATION_ID(520167 = SE 1.5.97, 406697 = AE 1.6.x).
+	enum class JournalTab : std::uint32_t
+	{
+		kQuest = 0,
+		kStats = 1,
+		kSystem = 2,
+	};
+	static inline REL::Relocation<std::uint32_t*> sJournalTabIdx{ RELOCATION_ID(520167, 406697) };
 
-	float                                                holdDuration{ kDefaultHoldDuration };
-	std::uint32_t                                        buttonKeyCode{ kDefaultButton };
-	std::string                                          buttonName{ "Start" };
-	RE::BSFixedString                                    shortPressUserEvent;
-	std::optional<std::chrono::steady_clock::time_point> _pressTime;
-	bool                                                 _mapTriggered{ false };
+	struct ButtonState : ButtonConfig
+	{
+		RE::BSFixedString                                    shortPressUserEvent;
+		std::optional<std::chrono::steady_clock::time_point> pressTime;
+		bool                                                 triggered{ false };
+	};
+
+	bool        ProcessButton(const RE::ButtonEvent* btn, ButtonState& state);
+	static bool DispatchViaMenuOpenHandler(const RE::BSFixedString& userEvent, std::uint32_t keyCode, const std::string& logContext);
+	static void DispatchShortPress(const ButtonState& state, float held);
+	void        DispatchLongPress(const ButtonState& state);
+	void        OpenJournalOnTab(JournalTab tab, const std::string& buttonName);
+	void        RestoreJournalTab();
+
+	float                    holdDuration{ kDefaultHoldDuration };
+	std::vector<ButtonState> _buttons;
+
+	// Saved tab index to restore sJournalTabIdx after any Journal long-press, so the
+	// player's next normal Journal open lands on the tab they had before the long-press.
+	// Restored on Journal close, or immediately as a fail-safe if the Journal never opens.
+	JournalTab _savedTabIdx{ JournalTab::kQuest };
+	bool       _tabRestorePending{ false };
 };

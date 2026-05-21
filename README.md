@@ -1,6 +1,6 @@
 # QuickMap
 
-Hold a configurable gamepad button (**Start** or **Back**, default: **Start**) for a configurable duration to open the **map**. A short press opens the button's normal menu.
+Hold **Start** or **Back** on your gamepad for a configurable duration to open a menu directly. A short press opens the button's normal menu.
 
 > **Gamepad only.** Default behaviour is fully preserved.
 
@@ -34,12 +34,25 @@ Edit `Data\SKSE\Plugins\QuickMap.ini`:
 
 ```ini
 [General]
-; Duration in seconds the button must be held to open the map (default: 0.5, max: 5.0)
+; Duration in seconds a button must be held to trigger its long-press action (default: 0.5, max: 5.0)
 fHoldDuration=0.5
-; Button to hold for the map. Short press performs the button's normal function.
-; Valid values: Start, Back (case-insensitive)
-sButton=Start
+; Long-press action for the Start (Menu) button. Short press performs the button's normal function.
+; Valid values: Map, System, Quests, Stats, None (case-insensitive)
+sButtonStartAction=Map
+; Long-press action for the Back (View) button. Short press performs the button's normal function.
+; Valid values: Map, System, Quests, Stats, None (case-insensitive)
+sButtonBackAction=System
 ```
+
+**Valid actions:**
+
+| Value | What it does |
+|-------|-------------|
+| `Map` | Opens the world map |
+| `System` | Opens the Journal on the System tab |
+| `Quests` | Opens the Journal on the Quests tab |
+| `Stats` | Opens the Journal on the Stats tab |
+| `None` | Button not intercepted |
 
 Logs are written to:
 ```
