@@ -1,6 +1,6 @@
 # QuickMap
 
-Hold a configurable gamepad button for a configurable duration to open a menu directly. A short press opens the button's normal menu.
+Hold **Start** or **Back** on your gamepad for a configurable duration to open a menu directly. A short press opens the button's normal menu.
 
 > **Gamepad only.** Default behaviour is fully preserved.
 
