@@ -203,10 +203,10 @@ void OnInputLoaded()
 	logger::info("Input sink registered");
 
 	auto* ui = RE::UI::GetSingleton();
-	if (!ui) {
-		logger::error("Failed to get UI — controls rebind detection disabled");
-	} else {
+	if (ui) {
 		ui->AddEventSink<RE::MenuOpenCloseEvent>(handler);
+	} else {
+		logger::error("Failed to get UI — controls rebind detection disabled");
 	}
 
 	handler->UpdateShortPressBinding();

@@ -34,9 +34,9 @@ void InputHandler::UpdateShortPressBinding()
 		bs.shortPressUserEvent = controlMap->GetUserEventName(bs.keyCode, RE::INPUT_DEVICE::kGamepad);
 		if (bs.shortPressUserEvent.empty()) {
 			logger::warn("{} has no binding in ControlMap — short press disabled", bs.name);
-		} else {
-			logger::info("{} short press user event: '{}'", bs.name, bs.shortPressUserEvent);
+			continue;
 		}
+		logger::info("{} short press user event: '{}'", bs.name, bs.shortPressUserEvent);
 	}
 }
 
@@ -44,17 +44,16 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 	const RE::MenuOpenCloseEvent* a_event,
 	RE::BSTEventSource<RE::MenuOpenCloseEvent>* /*a_eventSource*/)
 {
-	if (a_event && a_event->menuName == RE::JournalMenu::MENU_NAME) {
-		if (!a_event->opening) {
-			// Journal closed — restore the original tab index so the player's next
-			// normal Journal open lands on their own last-visited tab, not the one
-			// the plugin forced.
-			if (_tabRestorePending) {
-				RestoreJournalTab();
-			}
-			UpdateShortPressBinding();
-		}
+	if (!a_event || a_event->menuName != RE::JournalMenu::MENU_NAME || a_event->opening) {
+		return RE::BSEventNotifyControl::kContinue;
 	}
+	// Journal closed — restore the original tab index so the player's next
+	// normal Journal open lands on their own last-visited tab, not the one
+	// the plugin forced.
+	if (_tabRestorePending) {
+		RestoreJournalTab();
+	}
+	UpdateShortPressBinding();
 	return RE::BSEventNotifyControl::kContinue;
 }
 
@@ -99,10 +98,11 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 			continue;
 		}
 		for (auto& bs : _buttons) {
-			if (btn->GetIDCode() == bs.keyCode) {
-				if (ProcessButton(btn, bs)) {
-					shouldBlock = true;
-				}
+			if (btn->GetIDCode() != bs.keyCode) {
+				continue;
+			}
+			if (ProcessButton(btn, bs)) {
+				shouldBlock = true;
 			}
 		}
 	}
@@ -132,14 +132,13 @@ bool InputHandler::ProcessButton(const RE::ButtonEvent* btn, ButtonState& state)
 	}
 
 	if (btn->IsUp() && state.pressTime) {
-		if (state.triggered) {
-			state.triggered = false;
-		} else {
+		if (!state.triggered) {
 			const auto held = std::chrono::duration<float>(
 				std::chrono::steady_clock::now() - *state.pressTime)
 			                      .count();
 			DispatchShortPress(state, held);
 		}
+		state.triggered = false;
 		state.pressTime.reset();
 		return true;
 	}
