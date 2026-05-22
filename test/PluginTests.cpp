@@ -1,4 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
+#include <cmath>
+#include <limits>
 
 #include "Utils.h"
 
@@ -33,4 +35,9 @@ TEST_CASE("ClampHoldDuration clamps and validates values", "[utils]")
 	// Over max → cap at max
 	CHECK(ClampHoldDuration(5.1F, kDefault, kMax) == kMax);
 	CHECK(ClampHoldDuration(100.0F, kDefault, kMax) == kMax);
+
+	// Non-finite → default
+	CHECK(ClampHoldDuration(std::numeric_limits<float>::quiet_NaN(), kDefault, kMax) == kDefault);
+	CHECK(ClampHoldDuration(std::numeric_limits<float>::infinity(), kDefault, kMax) == kDefault);
+	CHECK(ClampHoldDuration(-std::numeric_limits<float>::infinity(), kDefault, kMax) == kDefault);
 }

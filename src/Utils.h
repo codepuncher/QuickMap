@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <cmath>
 #include <string_view>
 
 namespace QuickMap
@@ -18,7 +19,7 @@ namespace QuickMap
 	[[nodiscard]] inline float ClampHoldDuration(float value, float defaultVal, float maxVal)
 	{
 		assert(defaultVal > 0.0F && defaultVal <= maxVal);
-		if (value <= 0.0F) {
+		if (!std::isfinite(value) || value <= 0.0F) {
 			return defaultVal;
 		}
 		if (value > maxVal) {
