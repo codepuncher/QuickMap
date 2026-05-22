@@ -4,6 +4,10 @@
 #include <unordered_map>
 
 #include "InputHandler.h"
+#include "Utils.h"
+
+using QuickMap::ClampHoldDuration;
+using QuickMap::TrimWhitespace;
 
 void SetupLog()
 {
@@ -35,31 +39,19 @@ void SetupLog()
 
 float ReadHoldDuration(const CSimpleIniA& a_ini)
 {
-	const auto duration = static_cast<float>(a_ini.GetDoubleValue("General", "fHoldDuration", InputHandler::kDefaultHoldDuration));
-	if (duration <= 0.0F) {
-		logger::warn("fHoldDuration ({:.2f}) must be positive — using default {:.1f}", duration, InputHandler::kDefaultHoldDuration);
-		return InputHandler::kDefaultHoldDuration;
-	}
-	if (duration > InputHandler::kMaxHoldDuration) {
-		logger::warn("fHoldDuration ({:.2f}) exceeds maximum {:.1f} — capping", duration, InputHandler::kMaxHoldDuration);
-		return InputHandler::kMaxHoldDuration;
+	const auto raw = static_cast<float>(a_ini.GetDoubleValue("General", "fHoldDuration", InputHandler::kDefaultHoldDuration));
+	const auto duration = ClampHoldDuration(raw, InputHandler::kDefaultHoldDuration, InputHandler::kMaxHoldDuration);
+	if (duration != raw) {
+		if (raw <= 0.0F) {
+			logger::warn("fHoldDuration ({:.2f}) must be positive — using default {:.1f}", raw, InputHandler::kDefaultHoldDuration);
+		} else {
+			logger::warn("fHoldDuration ({:.2f}) exceeds maximum {:.1f} — capping", raw, InputHandler::kMaxHoldDuration);
+		}
 	}
 	return duration;
 }
 
 using LongPressAction = InputHandler::LongPressAction;
-
-namespace
-{
-	std::string_view TrimWhitespace(std::string_view s)
-	{
-		const auto first = s.find_first_not_of(" \t\r\n");
-		if (first == std::string_view::npos) {
-			return {};
-		}
-		return s.substr(first, s.find_last_not_of(" \t\r\n") - first + 1);
-	}
-}
 
 LongPressAction ReadLongPressAction(std::string_view raw, const char* iniKey)
 {

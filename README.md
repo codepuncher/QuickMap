@@ -152,6 +152,16 @@ cmake --build --preset release-windows
 
 The DLL lands in `build/msvc/Release/QuickMap.dll`.
 
+#### Running Tests (Windows)
+
+Unit tests use [Catch2](https://github.com/catchorg/Catch2) and run without SKSE or Skyrim installed.
+
+```bash
+cmake --preset test-windows
+cmake --build --preset test-windows
+ctest --preset test-windows
+```
+
 ---
 
 ### Git Hooks (Lefthook)
