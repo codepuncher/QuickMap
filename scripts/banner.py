@@ -24,6 +24,7 @@ Options:
 import argparse
 import hashlib
 import os
+import sys
 import urllib.request
 from pathlib import Path
 
@@ -142,7 +143,25 @@ def main() -> None:
     W, H = args.width, args.height
     base = args.font_size
 
-    title_font    = ImageFont.truetype(str(font_path), base)
+    # Shrink font until title fits within the canvas (leaving DIVIDER_X_PAD on each side).
+    # Stops at 30pt minimum; very long titles may still overflow at that size.
+    max_title_w = W - DIVIDER_X_PAD * 2
+    _tmp_draw   = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    title_font  = ImageFont.truetype(str(font_path), base)
+    while base > 30:
+        _bb = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
+        if (_bb[2] - _bb[0]) <= max_title_w:
+            break
+        base       = max(base - 2, 30)
+        title_font = ImageFont.truetype(str(font_path), base)
+
+    _bb = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
+    if (_bb[2] - _bb[0]) > max_title_w:
+        print(
+            f"warning: title still exceeds canvas width at minimum font size {base}pt — it will be clipped.",
+            file=sys.stderr,
+        )
+
     subtitle_font = ImageFont.truetype(str(font_path), base // 3)
     tags_font     = ImageFont.truetype(str(font_path), base // 5)
 

@@ -8,5 +8,11 @@
         "directxtk",
         "rapidcsv",
         "simpleini"
-    ]
+    ],
+    "features": {
+        "tests": {
+            "description": "Catch2 unit tests",
+            "dependencies": ["catch2"]
+        }
+    }
 }
