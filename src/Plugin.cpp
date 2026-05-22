@@ -113,9 +113,9 @@ std::vector<ButtonConfig> ReadButtons(const CSimpleIniA& a_ini)
 	};
 	const bool hasNewStyleKeys =
 		hasNonEmptyValue("sButtonStartAction") || hasNonEmptyValue("sButtonBackAction");
-	const char* legacyRaw = a_ini.GetValue("General", "sButton", nullptr);
 
-	if (!hasNewStyleKeys && legacyRaw) {
+	if (!hasNewStyleKeys && hasNonEmptyValue("sButton")) {
+		const char* legacyRaw = a_ini.GetValue("General", "sButton", nullptr);
 		// Legacy fallback: [General] sButton=Start|Back → Map action.
 		static const std::unordered_map<std::string, ButtonConfig> kLegacyMap{
 			{ "start", { .keyCode = static_cast<std::uint32_t>(Key::kStart), .name = "Start", .action = LongPressAction::kMap } },
