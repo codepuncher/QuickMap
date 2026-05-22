@@ -42,7 +42,9 @@ float ReadHoldDuration(const CSimpleIniA& a_ini)
 	const auto raw = static_cast<float>(a_ini.GetDoubleValue("General", "fHoldDuration", InputHandler::kDefaultHoldDuration));
 	const auto duration = ClampHoldDuration(raw, InputHandler::kDefaultHoldDuration, InputHandler::kMaxHoldDuration);
 	if (duration != raw) {
-		if (raw <= 0.0F) {
+		if (!std::isfinite(raw)) {
+			logger::warn("fHoldDuration is non-finite — using default {:.1f}", InputHandler::kDefaultHoldDuration);
+		} else if (raw <= 0.0F) {
 			logger::warn("fHoldDuration ({:.2f}) must be positive — using default {:.1f}", raw, InputHandler::kDefaultHoldDuration);
 		} else {
 			logger::warn("fHoldDuration ({:.2f}) exceeds maximum {:.1f} — capping", raw, InputHandler::kMaxHoldDuration);
