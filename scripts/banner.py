@@ -151,7 +151,7 @@ def main() -> None:
         _bb = _tmp_draw.textbbox((0, 0), args.title, font=ImageFont.truetype(str(font_path), base))
         if (_bb[2] - _bb[0]) <= max_title_w:
             break
-        base -= 2
+        base = max(base - 2, 30)
 
     title_font    = ImageFont.truetype(str(font_path), base)
     _bb           = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
