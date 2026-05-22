@@ -206,7 +206,7 @@ void OnInputLoaded()
 	if (ui) {
 		ui->AddEventSink<RE::MenuOpenCloseEvent>(handler);
 	} else {
-		logger::error("Failed to get UI — controls rebind detection disabled");
+		logger::error("Failed to get UI — Journal close handling and controls rebind detection disabled");
 	}
 
 	handler->UpdateShortPressBinding();
