@@ -3,8 +3,8 @@
 
 #include "Utils.h"
 
-using QuickMap::ClampHoldDuration;
-using QuickMap::TrimWhitespace;
+using HoldFast::ClampHoldDuration;
+using HoldFast::TrimWhitespace;
 
 TEST_CASE("TrimWhitespace removes leading and trailing whitespace", "[utils]")
 {

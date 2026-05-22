@@ -1,4 +1,4 @@
-# QuickMap
+# HoldFast
 
 Hold **Start** or **Back** on your gamepad for a configurable duration to open a menu directly. A short press opens the button's normal menu.
 
@@ -22,17 +22,17 @@ Inspired by Red Dead Redemption 2's hold-Start-to-open-map mechanic.
 
 **Mod manager (recommended):**
 1. Install the requirements above.
-2. Install QuickMap via your mod manager.
+2. Install HoldFast via your mod manager.
 3. Launch Skyrim via SKSE.
 
 **Manual:**
 1. Install the requirements above.
-2. Copy `QuickMap.dll` and `QuickMap.ini` to `Data\SKSE\Plugins\`.
+2. Copy `HoldFast.dll` and `HoldFast.ini` to `Data\SKSE\Plugins\`.
 3. Launch Skyrim via SKSE.
 
 ## Configuration
 
-Edit `Data\SKSE\Plugins\QuickMap.ini`:
+Edit `Data\SKSE\Plugins\HoldFast.ini`:
 
 ```ini
 [General]
@@ -60,7 +60,7 @@ sButtonBackAction=System
 
 Logs are written to:
 ```
-%USERPROFILE%\Documents\My Games\Skyrim Special Edition\SKSE\QuickMap.log
+%USERPROFILE%\Documents\My Games\Skyrim Special Edition\SKSE\HoldFast.log
 ```
 
 <!-- nexus:end -->
@@ -106,8 +106,8 @@ xwin splat --output ~/.xwin
 ##### 1. Clone
 
 ```bash
-git clone --recurse-submodules https://github.com/codepuncher/QuickMap.git
-cd QuickMap
+git clone --recurse-submodules https://github.com/codepuncher/HoldFast.git
+cd HoldFast
 ```
 
 ##### 2. Configure deploy path
@@ -131,7 +131,7 @@ cmake --preset release-linux
 cmake --build --preset release-linux
 ```
 
-The DLL lands in `build/release-linux/QuickMap.dll`.
+The DLL lands in `build/release-linux/HoldFast.dll`.
 
 ##### Deploy to mod manager
 
@@ -141,7 +141,7 @@ The DLL lands in `build/release-linux/QuickMap.dll`.
 source .env && cmake --workflow --preset deploy
 ```
 
-Copies `QuickMap.dll`, `QuickMap.pdb`, and `QuickMap.ini` into `$SKYRIM_MODS_FOLDER/QuickMap/SKSE/Plugins/`.
+Copies `HoldFast.dll`, `HoldFast.pdb`, and `HoldFast.ini` into `$SKYRIM_MODS_FOLDER/HoldFast/SKSE/Plugins/`.
 
 #### Windows (MSVC)
 
@@ -150,7 +150,7 @@ cmake --preset release-windows
 cmake --build --preset release-windows
 ```
 
-The DLL lands in `build/msvc/Release/QuickMap.dll`.
+The DLL lands in `build/msvc/Release/HoldFast.dll`.
 
 #### Running Tests (Windows)
 
@@ -219,6 +219,12 @@ Triggered via **workflow_dispatch** with `upload_to_nexus: true` and the `versio
 2. Add to your repository:
    - **Secret** `NEXUSMODS_API_KEY` — your Nexus Mods API key
    - **Variable** `NEXUSMODS_FILE_GROUP_ID` — the file group ID
+
+---
+
+## Known Conflicts
+
+- **[QuestJournalOverhaul](https://www.nexusmods.com/skyrimspecialedition/mods/141295)** — always forces the journal to the System tab, overriding HoldFast's tab selection. Fix planned.
 
 ---
 
