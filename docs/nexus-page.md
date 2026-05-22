@@ -39,7 +39,9 @@ Hold a gamepad button for a configurable duration to jump directly to a menu. Ea
 
 [line]
 
-[size=4][b]Requirements[/b][/size]
+<!-- generated:start -->
+
+[size=4][b][color=#B8953E]Requirements[/color][/b][/size]
 
 [list]
 [*][url=https://skse.silverlock.org/]SKSE64[/url]
@@ -90,6 +92,8 @@ sButtonBackAction=System
 [*][b]Stats[/b] — opens the Journal on the Stats tab
 [*][b]None[/b] — button not intercepted
 [/list]
+
+<!-- generated:end -->
 
 [line]
 

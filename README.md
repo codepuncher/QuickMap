@@ -10,6 +10,8 @@ Inspired by Red Dead Redemption 2's hold-Start-to-open-map mechanic.
 
 ---
 
+<!-- nexus:start -->
+
 ## Requirements
 
 - [Skyrim Special Edition](https://store.steampowered.com/app/489830) or Anniversary Edition
@@ -60,6 +62,8 @@ Logs are written to:
 ```
 %USERPROFILE%\Documents\My Games\Skyrim Special Edition\SKSE\QuickMap.log
 ```
+
+<!-- nexus:end -->
 
 ---
 
