@@ -147,14 +147,15 @@ def main() -> None:
     # Stops at 30pt minimum; very long titles may still overflow at that size.
     max_title_w = W - DIVIDER_X_PAD * 2
     _tmp_draw   = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    title_font  = ImageFont.truetype(str(font_path), base)
     while base > 30:
-        _bb = _tmp_draw.textbbox((0, 0), args.title, font=ImageFont.truetype(str(font_path), base))
+        _bb = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
         if (_bb[2] - _bb[0]) <= max_title_w:
             break
-        base = max(base - 2, 30)
+        base       = max(base - 2, 30)
+        title_font = ImageFont.truetype(str(font_path), base)
 
-    title_font    = ImageFont.truetype(str(font_path), base)
-    _bb           = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
+    _bb = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
     if (_bb[2] - _bb[0]) > max_title_w:
         print(
             f"warning: title still exceeds canvas width at minimum font size {base}pt — it will be clipped.",
