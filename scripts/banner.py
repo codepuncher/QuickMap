@@ -147,21 +147,19 @@ def main() -> None:
     max_title_w = W - DIVIDER_X_PAD * 2
     _tmp_draw   = ImageDraw.Draw(Image.new("RGB", (1, 1)))
     while base > 30:
-        title_font = ImageFont.truetype(str(font_path), base)
-        _bb        = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
+        _bb = _tmp_draw.textbbox((0, 0), args.title, font=ImageFont.truetype(str(font_path), base))
         if (_bb[2] - _bb[0]) <= max_title_w:
             break
         base -= 2
 
-    title_font = ImageFont.truetype(str(font_path), base)
-    _bb        = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
+    title_font    = ImageFont.truetype(str(font_path), base)
+    _bb           = _tmp_draw.textbbox((0, 0), args.title, font=title_font)
     if (_bb[2] - _bb[0]) > max_title_w:
         print(
             f"warning: title still exceeds canvas width at minimum font size {base}pt — it will be clipped.",
             file=sys.stderr,
         )
 
-    title_font    = ImageFont.truetype(str(font_path), base)
     subtitle_font = ImageFont.truetype(str(font_path), base // 3)
     tags_font     = ImageFont.truetype(str(font_path), base // 5)
 
