@@ -44,13 +44,14 @@ Hold a gamepad button for a configurable duration to jump directly to a menu. Ea
 [size=4][b][color=#B8953E]Requirements[/color][/b][/size]
 
 [list]
+[*][url=https://store.steampowered.com/app/489830]Skyrim Special Edition[/url] or Anniversary Edition
 [*][url=https://skse.silverlock.org/]SKSE64[/url]
 [*][url=https://www.nexusmods.com/skyrimspecialedition/mods/32444]Address Library for SKSE Plugins[/url]
 [/list]
 
 [line]
 
-[size=4][b]Installation[/b][/size]
+[size=4][b][color=#B8953E]Installation[/color][/b][/size]
 
 [b]Mod manager (recommended):[/b]
 [list=1]
@@ -68,7 +69,7 @@ Hold a gamepad button for a configurable duration to jump directly to a menu. Ea
 
 [line]
 
-[size=4][b]Configuration[/b][/size]
+[size=4][b][color=#B8953E]Configuration[/color][/b][/size]
 
 Edit [font=Courier New]Data\SKSE\Plugins\QuickMap.ini[/font]:
 
@@ -85,13 +86,21 @@ sButtonBackAction=System
 [/code]
 
 [b]Valid actions:[/b]
+
 [list]
-[*][b]Map[/b] — opens the map
-[*][b]System[/b] — opens the Journal on the System tab
-[*][b]Quests[/b] — opens the Journal on the Quests tab
-[*][b]Stats[/b] — opens the Journal on the Stats tab
-[*][b]None[/b] — button not intercepted
+[*][font=Courier New]Map[/font] — Opens the map
+[*][font=Courier New]System[/font] — Opens the Journal on the System tab
+[*][font=Courier New]Quests[/font] — Opens the Journal on the Quests tab
+[*][font=Courier New]Stats[/font] — Opens the Journal on the Stats tab
+[*][font=Courier New]None[/font] — Button not intercepted
 [/list]
+
+[b]Legacy config:[/b] If neither [font=Courier New]sButtonStartAction[/font] nor [font=Courier New]sButtonBackAction[/font] is present, the old [font=Courier New]sButton=Start[/font] (or [font=Courier New]sButton=Back[/font]) key is used as a fallback — with [font=Courier New]Map[/font] as the action. Existing INI files using [font=Courier New]sButton[/font] continue to work without changes.
+
+Logs are written to:
+[code]
+%USERPROFILE%\Documents\My Games\Skyrim Special Edition\SKSE\QuickMap.log
+[/code]
 
 <!-- generated:end -->
 
