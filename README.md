@@ -54,6 +54,8 @@ sButtonBackAction=System
 | `Stats` | Opens the Journal on the Stats tab |
 | `None` | Button not intercepted |
 
+**Legacy config:** If neither `sButtonStartAction` nor `sButtonBackAction` is present, the old `sButton=Start` (or `sButton=Back`) key is used as a fallback — with `Map` as the action. Existing INI files from v1.x continue to work without changes.
+
 Logs are written to:
 ```
 %USERPROFILE%\Documents\My Games\Skyrim Special Edition\SKSE\QuickMap.log
