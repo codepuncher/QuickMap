@@ -4,7 +4,7 @@
 #include <cmath>
 #include <string_view>
 
-namespace QuickMap
+namespace HoldFast
 {
 
 	[[nodiscard]] inline std::string_view TrimWhitespace(std::string_view s)

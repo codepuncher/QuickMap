@@ -2,7 +2,7 @@
 
 ## Short Description
 
-Hold a gamepad button (Start or Back) to open a menu directly — map, journal, quests, stats or system page. Each button is independently configurable. Short press still works normally.
+Hold a gamepad button (Start or Back) for a configurable duration to trigger a custom action — map, journal, quests, stats or system page. Each button is independently configurable. Short press still works normally.
 
 ---
 
@@ -20,8 +20,8 @@ Hold a gamepad button (Start or Back) to open a menu directly — map, journal, 
 ## Long Description (BBCode)
 
 ```bbcode
-[center][size=5][b]QuickMap[/b][/size]
-[i]Hold a gamepad button · Open the Map or Journal — fully configurable.[/i][/center]
+[center][size=5][b]HoldFast[/b][/size]
+[i]Hold it right there! · Configurable hold actions for gamepad[/i][/center]
 
 [line]
 
@@ -56,14 +56,14 @@ Hold a gamepad button for a configurable duration to jump directly to a menu. Ea
 [b]Mod manager (recommended):[/b]
 [list=1]
 [*]Install the requirements above.
-[*]Install QuickMap via your mod manager.
+[*]Install HoldFast via your mod manager.
 [*]Launch Skyrim via SKSE.
 [/list]
 
 [b]Manual:[/b]
 [list=1]
 [*]Install the requirements above.
-[*]Copy [font=Courier New]QuickMap.dll[/font] and [font=Courier New]QuickMap.ini[/font] to [font=Courier New]Data\SKSE\Plugins\[/font].
+[*]Copy [font=Courier New]HoldFast.dll[/font] and [font=Courier New]HoldFast.ini[/font] to [font=Courier New]Data\SKSE\Plugins\[/font].
 [*]Launch Skyrim via SKSE.
 [/list]
 
@@ -71,7 +71,7 @@ Hold a gamepad button for a configurable duration to jump directly to a menu. Ea
 
 [size=4][b][color=#B8953E]Configuration[/color][/b][/size]
 
-Edit [font=Courier New]Data\SKSE\Plugins\QuickMap.ini[/font]:
+Edit [font=Courier New]Data\SKSE\Plugins\HoldFast.ini[/font]:
 
 [code]
 [General]
@@ -99,7 +99,7 @@ sButtonBackAction=System
 
 Logs are written to:
 [code]
-%USERPROFILE%\Documents\My Games\Skyrim Special Edition\SKSE\QuickMap.log
+%USERPROFILE%\Documents\My Games\Skyrim Special Edition\SKSE\HoldFast.log
 [/code]
 
 <!-- generated:end -->
@@ -114,6 +114,11 @@ Logs are written to:
 [*]Compatible with any mod that does not also intercept the configured gamepad button.
 [/list]
 
+[b]Known conflicts:[/b]
+[list]
+[*][url=https://www.nexusmods.com/skyrimspecialedition/mods/141295]QuestJournalOverhaul[/url] — always forces the journal to the System tab, overriding HoldFast's tab selection. Fix planned.
+[/list]
+
 [line]
 
 [size=4][b]Credits[/b][/size]
@@ -123,5 +128,6 @@ Logs are written to:
 [*][url=https://skse.silverlock.org/]SKSE[/url] by the SKSE Team
 [*][url=https://www.nexusmods.com/skyrimspecialedition/mods/32444]Address Library for SKSE plugins[/url] by [url=https://www.nexusmods.com/profile/meh321]meh321[/url]
 [*][url=https://github.com/alandtse/CommonLibVR]CommonLibSSE-NG[/url] by [url=https://github.com/alandtse]alandtse[/url] and contributors
+[*][url=https://github.com/codepuncher/HoldFast]Source code: GitHub[/url]
 [/list]
 ```

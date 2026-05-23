@@ -10,14 +10,14 @@ Usage:
     python3 scripts/banner.py [options]
 
 Options:
-    --title TEXT        Main title  (default: "QuickMap")
-    --subtitle TEXT     Subtitle    (default: "Hold Start or Back  ·  Open the Map")
-    --tags TEXT         Tags line   (default: "Skyrim SE / AE  ·  SKSE  ·  Gamepad")
+    --title TEXT        Main title  (default: "HoldFast")
+    --subtitle TEXT     Subtitle    (default: "Hold it right there!")
+    --tags TEXT         Tags line   (default: "Configurable hold actions for gamepad")
     --font PATH         Path to a .ttf font file (skips auto-download)
     --output PATH       Output file (default: docs/assets/banner.png)
     --width INT         Canvas width  in pixels (default: 1280)
     --height INT        Canvas height in pixels (default: 638)
-    --font-size INT     Base font size in pt (default: 180, minimum: 30)
+    --font-size INT     Base font size in pt (default: 300, minimum: 30)
     --no-vignette       Disable the radial vignette effect
 """
 
@@ -34,16 +34,16 @@ from PIL import Image, ImageDraw, ImageFont
 # Defaults
 # ---------------------------------------------------------------------------
 
-DEFAULT_TITLE    = "QuickMap"
-DEFAULT_SUBTITLE = "Hold Start or Back  ·  Open the Map"
-DEFAULT_TAGS     = "Skyrim SE / AE  ·  SKSE  ·  Gamepad"
+DEFAULT_TITLE    = "HoldFast"
+DEFAULT_SUBTITLE = "Hold it right there!"
+DEFAULT_TAGS     = "Configurable hold actions for gamepad"
 DEFAULT_WIDTH    = 1280
 DEFAULT_HEIGHT   = 638
 DEFAULT_OUTPUT   = Path(__file__).parents[1] / "docs" / "assets" / "banner.png"
 
-BASE_FONT_SIZE = 180
+BASE_FONT_SIZE = 300
 
-DIVIDER_X_PAD = 140
+DIVIDER_X_PAD = 60
 
 # Colours
 BG_CENTRE = (18, 16,  9)
@@ -111,7 +111,7 @@ def radial_vignette(img: Image.Image) -> Image.Image:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate the QuickMap Nexus Mods banner image.",
+        description="Generate the HoldFast Nexus Mods banner image.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--title",       default=DEFAULT_TITLE,    help="Main title text")

@@ -6,8 +6,8 @@
 #include "InputHandler.h"
 #include "Utils.h"
 
-using QuickMap::ClampHoldDuration;
-using QuickMap::TrimWhitespace;
+using HoldFast::ClampHoldDuration;
+using HoldFast::TrimWhitespace;
 
 void SetupLog()
 {
@@ -17,7 +17,7 @@ void SetupLog()
 	}
 
 	const auto* plugin = SKSE::PluginDeclaration::GetSingleton();
-	const auto  logName = plugin ? std::string{ plugin->GetName() } + ".log" : "QuickMap.log";
+	const auto  logName = plugin ? std::string{ plugin->GetName() } + ".log" : "HoldFast.log";
 	auto        logPath = *logsFolder / logName;
 
 	auto                          fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logPath.string(), true);
@@ -159,9 +159,9 @@ void OnInputLoaded()
 	auto* handler = InputHandler::GetSingleton();
 
 	CSimpleIniA ini;
-	const auto  rc = ini.LoadFile(R"(Data\SKSE\Plugins\QuickMap.ini)");
+	const auto  rc = ini.LoadFile(R"(Data\SKSE\Plugins\HoldFast.ini)");
 	if (rc < SI_OK) {
-		logger::warn("QuickMap.ini not found or could not be parsed (rc={}) — using defaults", static_cast<int>(rc));
+		logger::warn("HoldFast.ini not found or could not be parsed (rc={}) — using defaults", static_cast<int>(rc));
 	}
 
 	const float holdDuration = ReadHoldDuration(ini);
@@ -170,7 +170,7 @@ void OnInputLoaded()
 
 	auto buttons = ReadButtons(ini);
 	if (buttons.empty()) {
-		logger::warn("No buttons configured — QuickMap is inactive");
+		logger::warn("No buttons configured — HoldFast is inactive");
 		return;
 	}
 

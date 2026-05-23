@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-    QuickMap
+    HoldFast
     VERSION 0.2.0
-    DESCRIPTION "Hold Start/Back to open the map; short press still opens the normal menu"
+    DESCRIPTION "Configurable hold actions for gamepad buttons; short press still works normally"
     LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -79,7 +79,7 @@ else()
     add_commonlibsse_plugin(
         ${PROJECT_NAME}
         NAME
-        "QuickMap"
+        "HoldFast"
         AUTHOR
         "codepuncher"
         SOURCES
@@ -107,7 +107,7 @@ else()
 
     set_target_properties(
         ${PROJECT_NAME}
-        PROPERTIES OUTPUT_NAME QuickMap
+        PROPERTIES OUTPUT_NAME HoldFast
                    PREFIX ""
                    SUFFIX ".dll")
 
@@ -169,7 +169,7 @@ else()
         DESTINATION "${DEPLOY_DIR}/SKSE/Plugins"
         OPTIONAL)
 
-    install(FILES "QuickMap.ini" DESTINATION "${DEPLOY_DIR}/SKSE/Plugins")
+    install(FILES "HoldFast.ini" DESTINATION "${DEPLOY_DIR}/SKSE/Plugins")
 
     # `cmake --build --preset deploy`  (or  cmake --workflow --preset deploy)
     add_custom_target(
