@@ -358,6 +358,11 @@ void InputHandler::SnapshotJournalTab(RE::UI* ui)
 	// is alive here (game is paused by the journal), and the last snapshot before the player
 	// presses close captures the correct final tab — before the SWF is freed.
 	// Only needed when QJO is installed; on vanilla, sJournalTabIdx is reliable.
+
+	// Fast path: once detection has confirmed QJO is not installed, skip the GetMenu lookup.
+	if (_qjoInstalled == false) {
+		return;
+	}
 	auto j = ui->GetMenu(RE::JournalMenu::MENU_NAME);
 	if (!j || !j->uiMovie) {
 		return;
