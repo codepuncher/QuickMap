@@ -488,9 +488,12 @@ void InputHandler::InvokeRestoreTabIfNeeded(JournalTab tab)
 
 	logger::info("QJO tab restore: current={} expected={} — calling RestoreSavedSettings", currentIdx, tabIdx);
 	std::array<RE::GFxValue, 2> args{ static_cast<double>(tabIdx), false /* abTabsDisabled */ };
-	journal->uiMovie->Invoke(
+	const bool                  ok = journal->uiMovie->Invoke(
 		kGfxRestoreSavedSettings,
 		nullptr, args.data(), static_cast<std::uint32_t>(args.size()));
+	if (!ok) {
+		logger::warn("QJO tab restore: RestoreSavedSettings({}) FAIL", tabIdx);
+	}
 }
 
 void InputHandler::DetectQJOIfNeeded(RE::GFxMovieView* movie)
