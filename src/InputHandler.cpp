@@ -2,6 +2,14 @@
 
 #include "InputHandler.h"
 
+namespace
+{
+	constexpr auto kGfxCurrentTab = "_root.QuestJournalFader.Menu_mc.iCurrentTab";
+	constexpr auto kGfxRestoreSavedSettings = "_root.QuestJournalFader.Menu_mc.RestoreSavedSettings";
+	constexpr auto kGfxSwitchPageToFront = "_root.QuestJournalFader.Menu_mc.SwitchPageToFront";
+	constexpr auto kGfxQJOEndPage = "_root.QuestJournalFader.Menu_mc.QuestsFader.Page_mc.QJO_EndPage";
+}
+
 InputHandler* InputHandler::GetSingleton()
 {
 	static InputHandler instance;
@@ -374,7 +382,7 @@ void InputHandler::SnapshotJournalTab(RE::UI* ui)
 		return;
 	}
 	RE::GFxValue tv;
-	if (!j->uiMovie->GetVariable(&tv, "_root.QuestJournalFader.Menu_mc.iCurrentTab") ||
+	if (!j->uiMovie->GetVariable(&tv, kGfxCurrentTab) ||
 		tv.GetType() != RE::GFxValue::ValueType::kNumber) {
 		return;
 	}
@@ -410,13 +418,11 @@ void InputHandler::InvokeScaleformTab(JournalTab tab)
 	if (tab == JournalTab::kQuest) {
 		// QJO_EndPage closes the Journal and opens QuestMenu (QJO's Quests navigation path).
 		// Falls back to vanilla SwitchPageToFront without QJO.
-		const bool qjoOk = journal->uiMovie->Invoke(
-			"_root.QuestJournalFader.Menu_mc.QuestsFader.Page_mc.QJO_EndPage",
-			nullptr, nullptr, 0);
+		const bool qjoOk = journal->uiMovie->Invoke(kGfxQJOEndPage, nullptr, nullptr, 0);
 		logger::info("Journal long press: QJO_EndPage {}", qjoOk ? "ok" : "not found — vanilla fallback");
 		if (!qjoOk) {
 			RE::GFxValue tabValue{ static_cast<double>(tabIdx) };
-			const bool   setOk = journal->uiMovie->SetVariable("_root.QuestJournalFader.Menu_mc.iCurrentTab", tabValue);
+			const bool   setOk = journal->uiMovie->SetVariable(kGfxCurrentTab, tabValue);
 			if (!setOk) {
 				logger::warn("Journal long press: SetVariable(iCurrentTab={}) failed", tabIdx);
 			}
@@ -424,7 +430,7 @@ void InputHandler::InvokeScaleformTab(JournalTab tab)
 			// true forces an immediate tab transition even if a fade is already in progress.
 			std::array<RE::GFxValue, 2> fallback{ static_cast<double>(tabIdx), true /* abForceFade */ };
 			journal->uiMovie->Invoke(
-				"_root.QuestJournalFader.Menu_mc.SwitchPageToFront",
+				kGfxSwitchPageToFront,
 				nullptr, fallback.data(), static_cast<std::uint32_t>(fallback.size()));
 		}
 		return;
@@ -436,7 +442,7 @@ void InputHandler::InvokeScaleformTab(JournalTab tab)
 	// and fires onTabChange → startPage() to populate page data.
 	std::array<RE::GFxValue, 2> args{ static_cast<double>(tabIdx), false /* abTabsDisabled */ };
 	const bool                  ok = journal->uiMovie->Invoke(
-		"_root.QuestJournalFader.Menu_mc.RestoreSavedSettings",
+		kGfxRestoreSavedSettings,
 		nullptr, args.data(), static_cast<std::uint32_t>(args.size()));
 	logger::info("Journal long press: RestoreSavedSettings({}) {}", tabIdx, ok ? "ok" : "FAIL");
 }
@@ -465,7 +471,7 @@ void InputHandler::InvokeRestoreTabIfNeeded(JournalTab tab)
 	}
 
 	RE::GFxValue current;
-	const bool   got = journal->uiMovie->GetVariable(&current, "_root.QuestJournalFader.Menu_mc.iCurrentTab");
+	const bool   got = journal->uiMovie->GetVariable(&current, kGfxCurrentTab);
 	if (!got || current.GetType() != RE::GFxValue::ValueType::kNumber) {
 		logger::warn("QJO tab restore: could not read iCurrentTab");
 		return;
@@ -483,7 +489,7 @@ void InputHandler::InvokeRestoreTabIfNeeded(JournalTab tab)
 	logger::info("QJO tab restore: current={} expected={} — calling RestoreSavedSettings", currentIdx, tabIdx);
 	std::array<RE::GFxValue, 2> args{ static_cast<double>(tabIdx), false /* abTabsDisabled */ };
 	journal->uiMovie->Invoke(
-		"_root.QuestJournalFader.Menu_mc.RestoreSavedSettings",
+		kGfxRestoreSavedSettings,
 		nullptr, args.data(), static_cast<std::uint32_t>(args.size()));
 }
 
@@ -495,8 +501,7 @@ void InputHandler::DetectQJOIfNeeded(RE::GFxMovieView* movie)
 	// Probe for a QJO-specific function in the Quests page SWF. QJO_EndPage is defined by
 	// QJO and absent in vanilla — GetVariable returns undefined (or fails) without QJO.
 	RE::GFxValue result;
-	const bool   found = movie->GetVariable(
-		&result, "_root.QuestJournalFader.Menu_mc.QuestsFader.Page_mc.QJO_EndPage");
+	const bool   found = movie->GetVariable(&result, kGfxQJOEndPage);
 	_qjoInstalled = found && result.GetType() != RE::GFxValue::ValueType::kUndefined;
 	logger::info("QJO detection: {}", *_qjoInstalled ? "QJO installed" : "vanilla Journal");
 }
