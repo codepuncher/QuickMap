@@ -100,7 +100,9 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 	// If any pausing menu is open, pass all input through and clear any captured press so it
 	// can't fire a spurious dispatch once the menu closes.
 	if (ui && ui->GameIsPaused()) {
-		SnapshotJournalTab(ui);
+		if (ui->IsMenuOpen(RE::JournalMenu::MENU_NAME)) {
+			SnapshotJournalTab(ui);
+		}
 		for (auto& bs : _buttons) {
 			bs.pressTime.reset();
 			bs.triggered = false;
