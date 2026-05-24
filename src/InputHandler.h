@@ -89,6 +89,10 @@ private:
 	void        DispatchLongPress(const ButtonState& state);
 	void        OpenJournalOnTab(JournalTab tab, const std::string& buttonName);
 	void        RestoreJournalTab();
+	static void InvokeScaleformTab(JournalTab tab);
+	void        InvokeRestoreTabIfNeeded(JournalTab tab);
+	void        SnapshotJournalTab(RE::UI* ui);
+	void        DetectQJOIfNeeded();
 
 	float                    holdDuration{ kDefaultHoldDuration };
 	std::vector<ButtonState> _buttons;
@@ -96,6 +100,17 @@ private:
 	// Saved tab index to restore sJournalTabIdx after any Journal long-press, so the
 	// player's next normal Journal open lands on the tab they had before the long-press.
 	// Restored on Journal close, or immediately as a fail-safe if the Journal never opens.
-	JournalTab _savedTabIdx{ JournalTab::kQuest };
-	bool       _tabRestorePending{ false };
+	// _pendingTab: target tab to set via Scaleform on Journal open (QJO compat).
+	// _lastKnownTab: (QJO only) tab the player was last on when the Journal was open; used to
+	//               counter QJO's forced kSystem override on every Journal open. Updated by the
+	//               GameIsPaused input snapshot whenever the Journal is open (skips kQuest=0,
+	//               the navigation-away transient set by the SWF before CloseMenu). Empty until
+	//               first snapshot fires.
+	// _qjoInstalled: cached result of QJO presence detection (detected on first Journal open).
+	//               When false/empty, QJO tab-restore logic is skipped entirely.
+	JournalTab                _savedTabIdx{ JournalTab::kQuest };
+	bool                      _tabRestorePending{ false };
+	std::optional<JournalTab> _pendingTab{};
+	std::optional<JournalTab> _lastKnownTab{};
+	std::optional<bool>       _qjoInstalled{};
 };
