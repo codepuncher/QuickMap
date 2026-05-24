@@ -49,7 +49,6 @@ RE::BSEventNotifyControl InputHandler::ProcessEvent(
 	}
 
 	if (a_event->opening) {
-		DetectQJOIfNeeded();
 		if (_pendingTab.has_value()) {
 			const auto tab = *_pendingTab;
 			logger::info("Journal opening — switching to tab {}", static_cast<std::uint32_t>(tab));
