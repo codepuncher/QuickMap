@@ -471,7 +471,7 @@ void InputHandler::InvokeRestoreTabIfNeeded(JournalTab tab)
 		return;
 	}
 	const auto currentNum = current.GetNumber();
-	if (!std::isfinite(currentNum) || currentNum < 0.0) {
+	if (!std::isfinite(currentNum) || currentNum < 0.0 || currentNum > static_cast<double>(JournalTab::kSystem)) {
 		logger::warn("QJO tab restore: iCurrentTab value is not a valid number");
 		return;
 	}
