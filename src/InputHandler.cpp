@@ -8,6 +8,7 @@ namespace
 	constexpr auto kGfxRestoreSavedSettings = "_root.QuestJournalFader.Menu_mc.RestoreSavedSettings";
 	constexpr auto kGfxSwitchPageToFront = "_root.QuestJournalFader.Menu_mc.SwitchPageToFront";
 	constexpr auto kGfxQJOEndPage = "_root.QuestJournalFader.Menu_mc.QuestsFader.Page_mc.QJO_EndPage";
+	constexpr auto kBestiaryMenuName = "BestiaryMenu";
 }
 
 InputHandler* InputHandler::GetSingleton()
@@ -188,6 +189,7 @@ void InputHandler::DispatchLongPress(const ButtonState& state)
 	case LongPressAction::kMap:
 	case LongPressAction::kMagic:
 	case LongPressAction::kInventory:
+	case LongPressAction::kBestiary:
 		{
 			auto* uiQueue = RE::UIMessageQueue::GetSingleton();
 			if (!uiQueue) {
@@ -201,6 +203,9 @@ void InputHandler::DispatchLongPress(const ButtonState& state)
 				break;
 			case LongPressAction::kMagic:
 				menuName = RE::MagicMenu::MENU_NAME;
+				break;
+			case LongPressAction::kBestiary:
+				menuName = kBestiaryMenuName;
 				break;
 			default:
 				menuName = RE::InventoryMenu::MENU_NAME;
